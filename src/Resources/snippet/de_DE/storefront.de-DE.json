@@ -1,0 +1,15 @@
+{
+  "kommandhub-africacommercecore": {
+    "title": "African Commerce Core für Shopware 6"
+  },
+  "kmhAf": {
+    "address": {
+      "landmark": "Markanter Punkt in der Nähe",
+      "area": "Gebiet / Stadtviertel",
+      "digitalAddressCode": "Digitaler Adresscode",
+      "directions": "Wegbeschreibung",
+      "division": "Verwaltungsbezirk",
+      "divisionPlaceholder": "Bezirk wählen (optional)"
+    }
+  }
+}

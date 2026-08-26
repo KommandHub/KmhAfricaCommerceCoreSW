@@ -1,0 +1,15 @@
+{
+  "kmhAf": {
+    "import": {
+      "description": "Afrikanische Länder, ISO-3166-2-Unterteilungen, Währungsgenauigkeit und (falls aktiviert) Verwaltungsbezirke anlegen und korrigieren. Mehrfach ausführbar — dupliziert nichts und überschreibt keine als überschrieben markierten Datensätze.",
+      "button": "Referenzdaten-Import ausführen",
+      "success": "Referenzdaten-Import abgeschlossen.",
+      "error": "Referenzdaten-Import fehlgeschlagen. Bitte Logs prüfen.",
+      "dataset": "Datensatz",
+      "created": "Erstellt",
+      "updated": "Aktualisiert",
+      "upToDate": "Aktuell",
+      "overridden": "Überschrieben"
+    }
+  }
+}

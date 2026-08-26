@@ -1,0 +1,63 @@
+{% sw_extends '@Storefront/storefront/component/address/address-form.html.twig' %}
+
+{% block component_address_form_address_fields %}
+    {{ parent() }}
+
+    {% if config('KmhAfricaCommerceCoreSW.config.addressExtensionsEnabled') %}
+        {% set kmhAfData = data.extensions.kmhAfData ?? null %}
+
+        {% block component_address_form_kmh_af_fields %}
+            <div class="row g-2 kmh-af-address-fields"
+                 data-kmh-af-address="true"
+                 data-prefix="{{ prefix }}"
+                 data-phone-url="{{ path('frontend.kmh-af.phone.normalize') }}"
+                 data-divisions-url="{{ path('frontend.kmh-af.divisions.state', { countryStateId: '__STATE_ID__' }) }}"
+                 data-selected-division="{{ kmhAfData.division.code ?? '' }}">
+
+                {% block component_address_form_kmh_af_landmark %}
+                    <div class="form-group col-md-6">
+                        <label class="form-label" for="{{ prefix }}kmhAfLandmark">{{ "kmhAf.address.landmark"|trans }}</label>
+                        <input type="text" class="form-control" id="{{ prefix }}kmhAfLandmark"
+                               name="{{ prefix }}[kmhAfLandmark]" maxlength="255" value="{{ kmhAfData.landmark ?? '' }}"/>
+                    </div>
+                {% endblock %}
+
+                {% block component_address_form_kmh_af_area %}
+                    <div class="form-group col-md-6">
+                        <label class="form-label" for="{{ prefix }}kmhAfArea">{{ "kmhAf.address.area"|trans }}</label>
+                        <input type="text" class="form-control" id="{{ prefix }}kmhAfArea"
+                               name="{{ prefix }}[kmhAfArea]" maxlength="255" value="{{ kmhAfData.area ?? '' }}"/>
+                    </div>
+                {% endblock %}
+
+                {% if config('KmhAfricaCommerceCoreSW.config.administrativeHierarchyEnabled') %}
+                    {% block component_address_form_kmh_af_division %}
+                        <div class="form-group col-md-6">
+                            <label class="form-label" for="{{ prefix }}kmhAfDivision">{{ "kmhAf.address.division"|trans }}</label>
+                            <select class="form-select" id="{{ prefix }}kmhAfDivision"
+                                    name="{{ prefix }}[kmhAfDivisionCode]" data-kmh-af-division disabled>
+                                <option value="">{{ "kmhAf.address.divisionPlaceholder"|trans }}</option>
+                            </select>
+                        </div>
+                    {% endblock %}
+                {% endif %}
+
+                {% block component_address_form_kmh_af_digital_code %}
+                    <div class="form-group col-md-6">
+                        <label class="form-label" for="{{ prefix }}kmhAfDigitalAddressCode">{{ "kmhAf.address.digitalAddressCode"|trans }}</label>
+                        <input type="text" class="form-control" id="{{ prefix }}kmhAfDigitalAddressCode"
+                               name="{{ prefix }}[kmhAfDigitalAddressCode]" maxlength="255" value="{{ kmhAfData.digitalAddressCode ?? '' }}"/>
+                    </div>
+                {% endblock %}
+
+                {% block component_address_form_kmh_af_directions %}
+                    <div class="form-group col-12">
+                        <label class="form-label" for="{{ prefix }}kmhAfDirections">{{ "kmhAf.address.directions"|trans }}</label>
+                        <textarea class="form-control" id="{{ prefix }}kmhAfDirections"
+                                  name="{{ prefix }}[kmhAfDirections]" rows="2">{{ kmhAfData.directions ?? '' }}</textarea>
+                    </div>
+                {% endblock %}
+            </div>
+        {% endblock %}
+    {% endif %}
+{% endblock %}

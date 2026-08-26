@@ -1,0 +1,7 @@
+[
+  { "country": "NG", "state": "NG-LA", "code": "NG-LA-IKEJA", "name": "Ikeja", "parent": null, "type": "LGA" },
+  { "country": "NG", "state": "NG-LA", "code": "NG-LA-ETIOSA", "name": "Eti-Osa", "parent": null, "type": "LGA" },
+  { "country": "NG", "state": "NG-LA", "code": "NG-LA-SURULERE", "name": "Surulere", "parent": null, "type": "LGA" },
+  { "country": "NG", "state": "NG-LA", "code": "NG-LA-IKEJA-OJODU", "name": "Ojodu", "parent": "NG-LA-IKEJA", "type": "Ward" },
+  { "country": "NG", "state": "NG-LA", "code": "NG-LA-IKEJA-ALAUSA", "name": "Alausa", "parent": "NG-LA-IKEJA", "type": "Ward" }
+]

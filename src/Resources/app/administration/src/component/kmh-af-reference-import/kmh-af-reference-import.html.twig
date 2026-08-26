@@ -1,0 +1,41 @@
+{% block kmh_af_reference_import %}
+<div class="kmh-af-reference-import">
+    {% block kmh_af_reference_import_description %}
+        <p class="kmh-af-reference-import__description">
+            {{ $tc('kmhAf.import.description') }}
+        </p>
+    {% endblock %}
+
+    {% block kmh_af_reference_import_button %}
+        <mt-button
+            variant="primary"
+            :isLoading="isLoading"
+            @click="runImport">
+            {{ $tc('kmhAf.import.button') }}
+        </mt-button>
+    {% endblock %}
+
+    {% block kmh_af_reference_import_result %}
+        <table v-if="sections" class="kmh-af-reference-import__result">
+            <thead>
+                <tr>
+                    <th>{{ $tc('kmhAf.import.dataset') }}</th>
+                    <th>{{ $tc('kmhAf.import.created') }}</th>
+                    <th>{{ $tc('kmhAf.import.updated') }}</th>
+                    <th>{{ $tc('kmhAf.import.upToDate') }}</th>
+                    <th>{{ $tc('kmhAf.import.overridden') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="row in rows" :key="row.dataset">
+                    <td>{{ row.dataset }}</td>
+                    <td>{{ row.created }}</td>
+                    <td>{{ row.updated }}</td>
+                    <td>{{ row.upToDate }}</td>
+                    <td>{{ row.overridden }}</td>
+                </tr>
+            </tbody>
+        </table>
+    {% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+    # Give this plugin's services the ConfigurableLogger wherever they type-hint
+    # PSR-3, without touching the container-wide Psr\Log\LoggerInterface alias.
+    #
+    # Aliasing that globally rebinds LoggerInterface for *every* autowired
+    # consumer in the installation, including Shopware core and other plugins.
+    # Two plugins doing it means the last one compiled wins, so sibling plugins
+    # would silently log through each other's logger and each other's debug
+    # toggle. A bind is scoped to the services defined in this file, so it
+    # cannot collide.
+    bind:
+      Psr\Log\LoggerInterface $logger: '@Kommandhub\AfricaCommerceCore\Logging\ConfigurableLogger'
+
+  Kommandhub\AfricaCommerceCore\:
+    resource: '../../*'
+    # Domain/ is the framework-agnostic core (pure value objects, enums, the
+    # resolver, the dataset). It imports no Shopware and is excluded from the
+    # autowire glob so its scalar-constructor value objects are never treated as
+    # services; the handful of Domain services that adapters need are registered
+    # explicitly below.
+    exclude: '../../{DependencyInjection,Domain,Entity,Migration,Tests,Kernel.php}'
+
+  # The explicit $logger argument overrides the bind above, so the wrapper
+  # decorates the real monolog channel instead of recursing into itself.
+  Kommandhub\AfricaCommerceCore\Logging\ConfigurableLogger:
+    arguments:
+      $logger: '@monolog.logger.kommandhub_africacommercecore_channel'
+    tags:
+      - { name: 'monolog.logger', channel: 'kommandhub_africacommercecore_channel' }
+
+  # --- Country-Configuration spine -----------------------------------------
+  # Domain/ ships the pure resolver; the adapter binds its ConfigSource to
+  # SystemConfig. Symfony does not auto-alias a Domain interface to an impl in
+  # another namespace, so the aliases are explicit, and the Domain resolver
+  # (excluded from the autowire glob) is registered by hand.
+  Kommandhub\AfricaCommerceCore\Domain\CountryConfiguration\ConfigSourceInterface:
+    alias: Kommandhub\AfricaCommerceCore\CountryConfiguration\SystemConfigConfigSource
+
+  Kommandhub\AfricaCommerceCore\Domain\CountryConfiguration\PrecedenceConfigResolver:
+    arguments:
+      $source: '@Kommandhub\AfricaCommerceCore\Domain\CountryConfiguration\ConfigSourceInterface'
+
+  Kommandhub\AfricaCommerceCore\Domain\CountryConfiguration\ConfigResolverInterface:
+    alias: Kommandhub\AfricaCommerceCore\Domain\CountryConfiguration\PrecedenceConfigResolver
+
+  # --- Geo / Reference-Data backbone ---------------------------------------
+  # Domain-side pure services (excluded from this plugin's autowire glob).
+  Kommandhub\AfricaCommerceCore\Domain\Geo\Reconciler: ~
+
+  Kommandhub\AfricaCommerceCore\Domain\Geo\AfricanReferenceData: ~
+
+  Kommandhub\AfricaCommerceCore\Domain\Geo\ReferenceDataProviderInterface:
+    alias: Kommandhub\AfricaCommerceCore\Domain\Geo\AfricanReferenceData
+
+  # Reconciles the dataset against the DAL. Repositories are bound explicitly so
+  # the wiring is identical on 6.6 and 6.7 regardless of repository autowiring.
+  Kommandhub\AfricaCommerceCore\Geo\ReferenceImporter:
+    arguments:
+      $currencyRepository: '@currency.repository'
+      $countryRepository: '@country.repository'
+      $countryStateRepository: '@country_state.repository'
+      $administrativeDivisionRepository: '@kmh_af_administrative_division.repository'
+
+  Kommandhub\AfricaCommerceCore\Geo\ReferenceImportCommand:
+    tags:
+      - { name: 'console.command' }
+
+  # --- Administrative-division hierarchy ------------------------------------
+  # DAL definitions (the repository services are created by Shopware from these).
+  Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DataAbstractionLayer\AdministrativeDivisionDefinition:
+    tags:
+      - { name: 'shopware.entity.definition', entity: 'kmh_af_administrative_division' }
+
+  Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DataAbstractionLayer\Aggregate\AdministrativeDivisionTranslation\AdministrativeDivisionTranslationDefinition:
+    tags:
+      - { name: 'shopware.entity.definition', entity: 'kmh_af_administrative_division_translation' }
+
+  # Pure tree builder (Domain, excluded from the glob) + the DAL-backed provider.
+  Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionTreeBuilder: ~
+
+  Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DalDivisionProvider:
+    arguments:
+      # Prefixed entity -> named repository autowiring cannot resolve it; bind it.
+      $administrativeDivisionRepository: '@kmh_af_administrative_division.repository'
+
+  Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionProviderInterface:
+    alias: Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DalDivisionProvider
+
+  # --- Currency formatting + phone normalization ---------------------------
+  # Pure Domain services (excluded from the glob), exposed via their interfaces.
+  Kommandhub\AfricaCommerceCore\Domain\CurrencyFormatting\IntlCurrencyFormatter: ~
+
+  Kommandhub\AfricaCommerceCore\Domain\CurrencyFormatting\CurrencyFormatterInterface:
+    alias: Kommandhub\AfricaCommerceCore\Domain\CurrencyFormatting\IntlCurrencyFormatter
+
+  Kommandhub\AfricaCommerceCore\Domain\Phone\LibPhoneNumberNormalizer: ~
+
+  Kommandhub\AfricaCommerceCore\Domain\Phone\PhoneNormalizerInterface:
+    alias: Kommandhub\AfricaCommerceCore\Domain\Phone\LibPhoneNumberNormalizer
+
+  # Address-validation seam: advisory, config-driven default. Override the alias
+  # to add or relax warnings.
+  Kommandhub\AfricaCommerceCore\Domain\Address\DefaultAddressValidator: ~
+
+  Kommandhub\AfricaCommerceCore\Domain\Address\AddressValidatorInterface:
+    alias: Kommandhub\AfricaCommerceCore\Domain\Address\DefaultAddressValidator
+
+  # --- Additive address data (1:1 aggregate of customer_address) -----------
+  Kommandhub\AfricaCommerceCore\Address\DataAbstractionLayer\CustomerAddressAfricaDataDefinition:
+    tags:
+      - { name: 'shopware.entity.definition', entity: 'kmh_af_customer_address_data' }
+
+  Kommandhub\AfricaCommerceCore\Address\CustomerAddressExtension:
+    tags:
+      - { name: 'shopware.entity.extension' }
+
+  # Writes the additive fields from an address databag into the 1:1 aggregate.
+  # Shared by the address-persistence decorators below.
+  Kommandhub\AfricaCommerceCore\Address\AddressDataWriter:
+    arguments:
+      $addressDataRepository: '@kmh_af_customer_address_data.repository'
+      $administrativeDivisionRepository: '@kmh_af_administrative_division.repository'
+
+  # Decoration seam (address persistence): core's address routes map a fixed
+  # field whitelist and ignore the rest, so the additive fields are written to
+  # their 1:1 aggregate after the core save. Gated by the address feature.
+  Kommandhub\AfricaCommerceCore\Address\SalesChannel\KmhUpsertAddressRoute:
+    decorates: Shopware\Core\Checkout\Customer\SalesChannel\UpsertAddressRoute
+    arguments:
+      $decorated: '@.inner'
+
+  Kommandhub\AfricaCommerceCore\Address\SalesChannel\KmhRegisterRoute:
+    decorates: Shopware\Core\Checkout\Customer\SalesChannel\RegisterRoute
+    arguments:
+      $decorated: '@.inner'
+
+  # Pre-fills the additive fields on the address edit form (loads the 1:1
+  # aggregate the page does not fetch by default). Autoconfigured as a subscriber.
+  Kommandhub\AfricaCommerceCore\Address\Subscriber\AddressPageSubscriber:
+    arguments:
+      $addressDataRepository: '@kmh_af_customer_address_data.repository'
+
+  # --- Store-API routes (published extension points) ------------------------
+  Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\Controller\DivisionController:
+    public: true
+    calls:
+      - [setContainer, ['@service_container']]
+
+  Kommandhub\AfricaCommerceCore\Phone\Controller\PhoneController:
+    public: true
+    calls:
+      - [setContainer, ['@service_container']]
+
+  # --- Admin API action (config "Run import" button) ------------------------
+  Kommandhub\AfricaCommerceCore\Administration\Controller\ReferenceImportController:
+    public: true
+    calls:
+      - [setContainer, ['@service_container']]
+
+  # --- Storefront controllers (consumed by the address-form JS) -------------
+  Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\Controller\DivisionStorefrontController:
+    public: true
+    calls:
+      - [setContainer, ['@service_container']]
+
+  Kommandhub\AfricaCommerceCore\Phone\Controller\PhoneStorefrontController:
+    public: true
+    arguments:
+      $countryRepository: '@country.repository'
+    calls:
+      - [setContainer, ['@service_container']]
+

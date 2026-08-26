@@ -1,0 +1,15 @@
+{
+  "kmhAf": {
+    "import": {
+      "description": "Seed and correct African countries, ISO 3166-2 subdivisions, currency precision and (when enabled) administrative divisions. Safe to run repeatedly — it never duplicates or overwrites records you have marked as overridden.",
+      "button": "Run reference-data import",
+      "success": "Reference-data import finished.",
+      "error": "Reference-data import failed. Check the logs.",
+      "dataset": "Dataset",
+      "created": "Created",
+      "updated": "Updated",
+      "upToDate": "Up to date",
+      "overridden": "Overridden"
+    }
+  }
+}

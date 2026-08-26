@@ -1,0 +1,11 @@
+{
+  "main.js": {
+    "file": "assets/kmh-africa-commerce-core-s-w-CAIoH04q.js",
+    "name": "kmh-africa-commerce-core-s-w",
+    "src": "main.js",
+    "isEntry": true,
+    "css": [
+      "assets/kmh-africa-commerce-core-s-w-DNRA6OTo.css"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+kmh_africacommercecore_administrative_hierarchy:
+    resource: ../../AdministrativeHierarchy/Controller/
+    type: attribute
+
+kmh_africacommercecore_phone:
+    resource: ../../Phone/Controller/
+    type: attribute
+
+kmh_africacommercecore_administration:
+    resource: ../../Administration/Controller/
+    type: attribute

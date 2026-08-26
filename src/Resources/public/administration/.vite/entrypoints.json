@@ -1,0 +1,25 @@
+{
+  "base": "/bundles/kmhafricacommercecoresw/administration/",
+  "entryPoints": {
+    "kmh-africa-commerce-core-s-w": {
+      "css": [
+        "/bundles/kmhafricacommercecoresw/administration/assets/kmh-africa-commerce-core-s-w-DNRA6OTo.css"
+      ],
+      "dynamic": [],
+      "js": [
+        "/bundles/kmhafricacommercecoresw/administration/assets/kmh-africa-commerce-core-s-w-CAIoH04q.js"
+      ],
+      "legacy": false,
+      "preload": []
+    }
+  },
+  "legacy": false,
+  "metadatas": {},
+  "version": [
+    "7.1.0",
+    7,
+    1,
+    0
+  ],
+  "viteServer": null
+}

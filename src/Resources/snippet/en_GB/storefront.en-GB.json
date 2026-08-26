@@ -1,0 +1,15 @@
+{
+  "kommandhub-africacommercecore": {
+    "title": "African Commerce Core for Shopware 6"
+  },
+  "kmhAf": {
+    "address": {
+      "landmark": "Nearest landmark",
+      "area": "Area / neighbourhood",
+      "digitalAddressCode": "Digital address code",
+      "directions": "Directions",
+      "division": "Local division",
+      "divisionPlaceholder": "Select a division (optional)"
+    }
+  }
+}

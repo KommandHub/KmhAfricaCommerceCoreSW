@@ -1,0 +1,85 @@
+{
+    "name": "kommandhub/africa-commerce-core-sw",
+    "description": "Foundational localization, geography, and address infrastructure for Shopware 6 across African markets: ISO-standard reference data seeding, a Sales-Channel-aware country-configuration resolver, and additive, standards-anchored address capabilities. A framework-agnostic domain core with a thin Shopware adapter in one plugin; each capability can be toggled on or off.",
+    "type": "shopware-platform-plugin",
+    "version": "0.1.0",
+    "license": "Apache-2.0",
+    "keywords": [
+        "shopware",
+        "shopware6",
+        "shopware-plugin",
+        "africacommercecore",
+        "cli",
+        "custom-fields",
+        "storefront"
+    ],
+    "homepage": "https://github.com/Kommandhub/KmhAfricaCommerceCoreSW",
+    "authors": [
+        {
+            "name": "Kommandhub",
+            "email": "info@kommandhub.com",
+            "homepage": "https://kommandhub.com",
+            "role": "Developer"
+        }
+    ],
+    "support": {
+        "email": "info@kommandhub.com",
+        "issues": "https://github.com/Kommandhub/KmhAfricaCommerceCoreSW/issues",
+        "source": "https://github.com/Kommandhub/KmhAfricaCommerceCoreSW",
+        "docs": "https://github.com/Kommandhub/KmhAfricaCommerceCoreSW/blob/main/README.md"
+    },
+    "require": {
+        "php": ">=8.2",
+        "ext-intl": "*",
+        "giggsey/libphonenumber-for-php": "^8.13",
+        "shopware/core": "~6.6.0 || ~6.7.0",
+        "shopware/storefront": "~6.6.0 || ~6.7.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5",
+        "shopware/dev-tools": "^1.5",
+        "friendsofphp/php-cs-fixer": "^3.94",
+        "phpstan/phpstan": "^2.1",
+        "rregeer/phpunit-coverage-check": "^0.3.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Kommandhub\\AfricaCommerceCore\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Kommandhub\\AfricaCommerceCore\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "shopware-plugin-class": "Kommandhub\\AfricaCommerceCore\\KmhAfricaCommerceCoreSW",
+        "label": {
+            "de-DE": "African Commerce Core",
+            "en-GB": "African Commerce Core",
+            "fr-FR": "African Commerce Core"
+        },
+        "description": {
+            "de-DE": "Foundational localization, geography, and address infrastructure for Shopware 6 across African markets: ISO-standard reference data seeding, a Sales-Channel-aware country-configuration resolver, and additive, standards-anchored address capabilities. A framework-agnostic domain core with a thin Shopware adapter in one plugin; each capability can be toggled on or off.",
+            "en-GB": "Foundational localization, geography, and address infrastructure for Shopware 6 across African markets: ISO-standard reference data seeding, a Sales-Channel-aware country-configuration resolver, and additive, standards-anchored address capabilities. A framework-agnostic domain core with a thin Shopware adapter in one plugin; each capability can be toggled on or off.",
+            "fr-FR": "Foundational localization, geography, and address infrastructure for Shopware 6 across African markets: ISO-standard reference data seeding, a Sales-Channel-aware country-configuration resolver, and additive, standards-anchored address capabilities. A framework-agnostic domain core with a thin Shopware adapter in one plugin; each capability can be toggled on or off."
+        },
+        "manufacturerLink": {
+            "de-DE": "https://kommandhub.com",
+            "en-GB": "https://kommandhub.com"
+        },
+        "supportLink": {
+            "de-DE": "https://kommandhub.com/support",
+            "en-GB": "https://kommandhub.com/support"
+        }
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "symfony/runtime": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

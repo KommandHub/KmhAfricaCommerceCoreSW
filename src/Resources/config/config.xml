@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="https://raw.githubusercontent.com/shopware/shopware/6.7/src/Core/System/SystemConfig/Schema/config.xsd">
+
+
+    <card>
+        <title>Reference data</title>
+        <title lang="de-DE">Referenzdaten</title>
+
+        <component name="kmh-af-reference-import">
+            <name>kmhAfReferenceImport</name>
+        </component>
+    </card>
+
+    <card>
+        <title>Features</title>
+        <title lang="de-DE">Funktionen</title>
+
+        <input-field type="bool">
+            <name>referenceDataEnabled</name>
+            <label>Reference data (countries, subdivisions, currency precision)</label>
+            <defaultValue>true</defaultValue>
+            <helpText>Enables the africa:reference:import command that activates African countries, seeds ISO 3166-2 subdivisions, and corrects ISO 4217 currency precision.</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>administrativeHierarchyEnabled</name>
+            <label>Administrative-division hierarchy (LGAs, sub-counties, cells)</label>
+            <defaultValue>false</defaultValue>
+            <helpText>Seeds and exposes an optional division tree below country_state (arbitrary depth per country). When on, africa:reference:import also reconciles the shipped divisions.</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>addressExtensionsEnabled</name>
+            <label>Additive address fields (landmark, area, directions, digital code)</label>
+            <defaultValue>false</defaultValue>
+            <helpText>Additive nullable address fields on customer addresses (available via DAL/Admin/API once installed). Storefront form rendering will honour this toggle.</helpText>
+        </input-field>
+
+        <input-field type="bool">
+            <name>phoneNormalizationEnabled</name>
+            <label>Phone normalization (E.164, warn-not-block)</label>
+            <defaultValue>false</defaultValue>
+            <helpText>Live phone feedback in the address form + the phone-normalize store-API/storefront endpoints. Warns on an invalid number, never blocks.</helpText>
+        </input-field>
+    </card>
+
+    <card>
+        <title>Logging</title>
+        <title lang="de-DE">Protokollierung</title>
+
+        <input-field type="bool">
+            <name>enableDebugging</name>
+            <label>Enable debug logging</label>
+            <label lang="de-DE">Debug-Protokollierung aktivieren</label>
+            <defaultValue>false</defaultValue>
+            <helpText>
+                Writes debug, info and warning entries to var/log/kommandhub_africacommercecore_*.log.
+                Errors are always logged regardless of this setting. Can be scoped
+                to a single sales channel.
+            </helpText>
+            <helpText lang="de-DE">
+                Schreibt Debug-, Info- und Warnungseinträge nach
+                var/log/kommandhub_africacommercecore_*.log. Fehler werden unabhängig von dieser
+                Einstellung immer protokolliert.
+            </helpText>
+        </input-field>
+
+        <input-field type="multi-select">
+            <name>logLevels</name>
+            <label>Log levels</label>
+            <label lang="de-DE">Protokollstufen</label>
+            <helpText>
+                Restrict debug logging to specific PSR-3 levels. Leave empty to
+                log every level once debug logging is enabled.
+            </helpText>
+            <options>
+                <option><id>debug</id><name>Debug</name></option>
+                <option><id>info</id><name>Info</name></option>
+                <option><id>notice</id><name>Notice</name></option>
+                <option><id>warning</id><name>Warning</name></option>
+            </options>
+        </input-field>
+    </card>
+</config>
