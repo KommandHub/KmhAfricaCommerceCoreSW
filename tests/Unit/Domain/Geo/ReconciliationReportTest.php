@@ -20,10 +20,13 @@ class ReconciliationReportTest extends TestCase
 
         // A missing record is a merchant to-do, not a pending change: a re-run
         // changes nothing, so the import has still converged.
+        $report->record(ReconcileAction::SkipOverridden);
+
         static::assertSame(1, $report->missing());
+        static::assertSame(1, $report->overridden());
         static::assertTrue($report->converged());
         static::assertSame(
-            ['created' => 0, 'updated' => 0, 'upToDate' => 1, 'overridden' => 0, 'missing' => 1],
+            ['created' => 0, 'updated' => 0, 'upToDate' => 1, 'overridden' => 1, 'missing' => 1],
             $report->toArray(),
         );
     }

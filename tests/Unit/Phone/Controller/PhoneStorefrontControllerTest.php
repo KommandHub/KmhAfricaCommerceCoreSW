@@ -54,10 +54,24 @@ class PhoneStorefrontControllerTest extends TestCase
         static::assertNull($body['warning']);
     }
 
+    public function testMissingNumberOrUnknownCountryIsABlankResult(): void
+    {
+        static::assertSame(
+            ['valid' => false, 'warning' => null, 'e164' => '', 'national' => '', 'international' => ''],
+            $this->normalize(''),
+        );
+        static::assertFalse($this->normalize('08031234567', countryId: '')['valid']);
+    }
+
+    public function testFeatureOffSaysSo(): void
+    {
+        static::assertSame(['enabled' => false], $this->normalize('08031234567', enabled: false));
+    }
+
     /**
      * @return array<string, mixed>
      */
-    private function normalize(string $number): array
+    private function normalize(string $number, string $countryId = self::COUNTRY_ID, bool $enabled = true): array
     {
         $country = new CountryEntity();
         $country->setId(self::COUNTRY_ID);
@@ -74,7 +88,7 @@ class PhoneStorefrontControllerTest extends TestCase
         ));
 
         $systemConfig = $this->createMock(SystemConfigService::class);
-        $systemConfig->method('getBool')->willReturn(true);
+        $systemConfig->method('getBool')->willReturn($enabled);
 
         $translator = $this->createMock(TranslatorInterface::class);
         $translator->method('trans')->willReturnCallback(static fn (string $id): string => 'translated:' . $id);
@@ -90,7 +104,7 @@ class PhoneStorefrontControllerTest extends TestCase
         $context->method('getContext')->willReturn(Context::createDefaultContext());
 
         $response = $controller->normalize(
-            new Request([], ['number' => $number, 'countryId' => self::COUNTRY_ID]),
+            new Request([], ['number' => $number, 'countryId' => $countryId]),
             $context,
         );
 
