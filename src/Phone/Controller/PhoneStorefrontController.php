@@ -62,7 +62,9 @@ class PhoneStorefrontController extends StorefrontController
             'national' => $result->national,
             'international' => $result->international,
             'valid' => $result->valid,
-            'warning' => $result->warning,
+            // Shown to the shopper: the normalizer's message is English library
+            // text, so the storefront gets a translated one instead.
+            'warning' => $result->valid ? null : $this->trans('kmhAf.phone.invalid'),
         ]);
     }
 

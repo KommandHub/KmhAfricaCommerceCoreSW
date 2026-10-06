@@ -10,6 +10,9 @@
       "directions": "Directions",
       "division": "Local division",
       "divisionPlaceholder": "Select a division (optional)"
+    },
+    "phone": {
+      "invalid": "This phone number doesn't look valid for the selected country. Please check it."
     }
   }
 }

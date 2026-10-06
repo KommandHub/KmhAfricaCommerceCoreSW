@@ -45,7 +45,8 @@ class DivisionController extends AbstractController
 
         return new JsonResponse([
             'countryIso' => strtoupper($countryIso),
-            'maxDepth' => $this->divisionProvider->maxDepth($countryIso),
+            // From the tree already built — no second provider query.
+            'maxDepth' => DivisionNode::depthOf($tree),
             'divisions' => array_map([$this, 'nodeToArray'], $tree),
         ]);
     }

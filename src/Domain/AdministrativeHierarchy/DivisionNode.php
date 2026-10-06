@@ -24,4 +24,20 @@ final class DivisionNode
         public readonly array $children = [],
     ) {
     }
+
+    /**
+     * Number of tiers in a forest of nodes (0 for none).
+     *
+     * @param list<DivisionNode> $nodes
+     */
+    public static function depthOf(array $nodes): int
+    {
+        $depth = 0;
+
+        foreach ($nodes as $node) {
+            $depth = max($depth, 1 + self::depthOf($node->children));
+        }
+
+        return $depth;
+    }
 }

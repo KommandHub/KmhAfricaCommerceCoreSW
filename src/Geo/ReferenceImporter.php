@@ -395,7 +395,13 @@ final class ReferenceImporter
 
     private function findOneBy(EntityRepository $repository, string $field, string $value, Context $context): ?Entity
     {
-        $criteria = (new Criteria())->addFilter(new EqualsFilter($field, $value))->setLimit(1);
+        // Translations are loaded for the override check: on country, currency and
+        // country_state the custom fields are translated, so the marker may have
+        // been set while editing in any language.
+        $criteria = (new Criteria())
+            ->addFilter(new EqualsFilter($field, $value))
+            ->addAssociation('translations')
+            ->setLimit(1);
 
         return $repository->search($criteria, $context)->first();
     }
@@ -406,8 +412,27 @@ final class ReferenceImporter
             return false;
         }
 
-        $customFields = $entity->get('customFields');
+        if ($this->hasOverrideMarker($entity->get('customFields'))) {
+            return true;
+        }
 
+        $translations = $entity->has('translations') ? $entity->get('translations') : null;
+
+        if (!is_iterable($translations)) {
+            return false;
+        }
+
+        foreach ($translations as $translation) {
+            if ($translation instanceof Entity && $this->hasOverrideMarker($translation->get('customFields'))) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function hasOverrideMarker(mixed $customFields): bool
+    {
         return \is_array($customFields)
             && !empty($customFields[AfricaCommerceCoreConstants::CUSTOM_FIELD_MERCHANT_OVERRIDE]);
     }

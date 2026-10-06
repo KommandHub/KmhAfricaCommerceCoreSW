@@ -165,6 +165,25 @@ aware and gated by their feature toggle.
 | `GET /store-api/kmh-af/divisions/{countryIso}` | Administrative hierarchy | the nested division tree (`code`, `name`, `parentCode`, `children`) + `maxDepth`; empty when the feature is off |
 | `POST /store-api/kmh-af/phone/normalize` | Phone normalization | `{ e164, national, international, valid, warning }` for a `number` + `countryIso`; 200 even when invalid (warn, don't block); 404 when the feature is off |
 
+### PHP extension points
+
+Services other plugins can inject (all registered under their interface):
+
+| Service | Purpose |
+| --- | --- |
+| `ConfigResolverInterface` | resolve a `RuleKey` `global → per-country → per-Sales-Channel` |
+| `AddressValidatorInterface` | advisory address warnings; the default warns when a country expects divisions (`divisionDepth > 0`) and none is picked. Re-alias it to add your own. Surfacing the warnings is up to the consumer. |
+| `DivisionProviderInterface` | the division tree for a country or state |
+| `PhoneNormalizerInterface` | E.164 normalization |
+| `CurrencyFormatterInterface` | ICU currency formatting |
+
+Rule values: the global default is the *Country rules* card (Sales-Channel
+scoped like any setting); per-country values are plain system-config keys:
+
+```bash
+bin/console system:config:set KmhAfricaCommerceCoreSW.country.NG.divisionDepth 2
+```
+
 ### Address flags (no custom validator)
 
 Representative per-country address policies are applied to core's own `country`

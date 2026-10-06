@@ -25,8 +25,6 @@ class Migration1786500100AddCustomerAddressFields extends MigrationStep
 
     public function update(Connection $connection): void
     {
-        $this->dropLegacyColumns($connection);
-
         $connection->executeStatement(<<<'SQL'
             CREATE TABLE IF NOT EXISTS `kmh_af_customer_address_data` (
                 `id`                   BINARY(16)   NOT NULL,
@@ -55,32 +53,5 @@ class Migration1786500100AddCustomerAddressFields extends MigrationStep
     public function updateDestructive(Connection $connection): void
     {
         // Intentionally empty — the plugin's uninstall drops the table when data is not kept.
-    }
-
-    /**
-     * Remove the invalid direct columns an earlier version of this migration
-     * added to customer_address (extensions may not add storage columns).
-     */
-    private function dropLegacyColumns(Connection $connection): void
-    {
-        $columns = $connection->createSchemaManager()->listTableColumns('customer_address');
-
-        if (!\array_key_exists('kmh_af_landmark', $columns)) {
-            return;
-        }
-
-        $connection->executeStatement(<<<'SQL'
-            ALTER TABLE `customer_address`
-                DROP FOREIGN KEY `fk.customer_address.kmh_af_division_id`;
-        SQL);
-
-        $connection->executeStatement(<<<'SQL'
-            ALTER TABLE `customer_address`
-                DROP COLUMN `kmh_af_landmark`,
-                DROP COLUMN `kmh_af_area`,
-                DROP COLUMN `kmh_af_directions`,
-                DROP COLUMN `kmh_af_digital_address_code`,
-                DROP COLUMN `kmh_af_division_id`;
-        SQL);
     }
 }

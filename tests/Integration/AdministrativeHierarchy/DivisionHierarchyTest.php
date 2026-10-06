@@ -58,6 +58,16 @@ class DivisionHierarchyTest extends TestCase
         static::assertNotNull($ikeja, 'Ikeja LGA is a top-tier root');
         static::assertCount(2, $ikeja->children, 'Ikeja has two wards below it');
 
+        // Siblings come back sorted by name (it is the dropdown order).
+        static::assertSame(
+            ['NG-LA-ETIOSA', 'NG-LA-IKEJA', 'NG-LA-SURULERE'],
+            array_map(static fn (DivisionNode $n): string => $n->code, $tree),
+        );
+        static::assertSame(
+            ['NG-LA-IKEJA-ALAUSA', 'NG-LA-IKEJA-OJODU'],
+            array_map(static fn (DivisionNode $n): string => $n->code, $ikeja->children),
+        );
+
         // Two tiers below the state (LGA -> ward).
         static::assertSame(2, $provider->maxDepth('NG'));
     }

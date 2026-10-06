@@ -20,6 +20,7 @@ class AddressDataWriterTest extends TestCase
     private const ADDRESS_ID = '0190a0b0c0d0e0f00010203040506070';
     private const ROW_ID = '0190a0b0c0d0e0f00010203040506071';
     private const DIVISION_ID = '0190a0b0c0d0e0f00010203040506072';
+    private const STATE_ID = '0190a0b0c0d0e0f00010203040506073';
 
     private EntityRepository&MockObject $addressData;
     private EntityRepository&MockObject $divisions;
@@ -85,7 +86,45 @@ class AddressDataWriterTest extends TestCase
                 && $payload[0]['customerAddressId'] === self::ADDRESS_ID,
         ));
 
-        $this->write(new RequestDataBag(['kmhAfDivisionCode' => 'ng-la-ikeja']));
+        $this->write(new RequestDataBag(['kmhAfDivisionCode' => 'ng-la-ikeja', 'countryStateId' => self::STATE_ID]));
+    }
+
+    /**
+     * The lookup is scoped to the address's state; with no state there is
+     * nothing to scope to, so no division is attached and none is looked up.
+     */
+    public function testDivisionNeedsTheAddressState(): void
+    {
+        $this->existingRow(self::ROW_ID);
+        $this->divisions->expects(static::never())->method('searchIds');
+
+        $this->addressData->expects(static::once())->method('upsert')->with(static::callback(
+            static fn (array $payload): bool => $payload[0]['divisionId'] === null,
+        ));
+
+        $this->write(new RequestDataBag(['kmhAfDivisionCode' => 'NG-LA-IKEJA']));
+    }
+
+    public function testDivisionLookupFiltersByState(): void
+    {
+        $this->existingRow(null);
+
+        $this->divisions->expects(static::once())->method('searchIds')->with(static::callback(
+            static function (Criteria $criteria): bool {
+                $filters = array_map(
+                    static fn ($f): array => [$f->getField(), $f->getValue()],
+                    $criteria->getFilters(),
+                );
+
+                return \in_array(['countryStateId', self::STATE_ID], $filters, true)
+                    && \in_array(['code', 'NG-LA-IKEJA'], $filters, true);
+            },
+        ))->willReturn($this->ids(null));
+
+        // Unknown in that state -> no division, nothing else entered -> no row.
+        $this->addressData->expects(static::never())->method('upsert');
+
+        $this->write(new RequestDataBag(['kmhAfDivisionCode' => 'ng-la-ikeja', 'countryStateId' => self::STATE_ID]));
     }
 
     private function write(RequestDataBag $bag): void

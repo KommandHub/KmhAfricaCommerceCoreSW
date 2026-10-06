@@ -19,7 +19,8 @@ use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
  * the mapping lives in one place. Idempotent per address (unique customer_address_id):
  * an existing row is updated, a blank submission with no existing row is skipped,
  * and a key missing from the databag leaves its stored value untouched.
- * The submitted division *code* is resolved to the division FK.
+ * The submitted division *code* is resolved to the division FK, within the
+ * address's own state.
  */
 final class AddressDataWriter
 {
@@ -52,7 +53,7 @@ final class AddressDataWriter
 
             $value = $this->clean($addressBag->get($key));
             $fields[$field] = $field === 'divisionId' && $value !== null
-                ? $this->resolveDivisionId($value, $context)
+                ? $this->resolveDivisionId($value, $this->clean($addressBag->get('countryStateId')), $context)
                 : $value;
         }
 
@@ -72,9 +73,21 @@ final class AddressDataWriter
         ], $context);
     }
 
-    private function resolveDivisionId(string $code, Context $context): ?string
+    /**
+     * A division only counts when it belongs to the address's own state, so a
+     * code from another state or country cannot be attached.
+     */
+    private function resolveDivisionId(string $code, ?string $countryStateId, Context $context): ?string
     {
-        $criteria = (new Criteria())->addFilter(new EqualsFilter('code', strtoupper($code)))->setLimit(1);
+        if ($countryStateId === null || !Uuid::isValid($countryStateId)) {
+            return null;
+        }
+
+        $criteria = (new Criteria())
+            ->addFilter(new EqualsFilter('code', strtoupper($code)))
+            ->addFilter(new EqualsFilter('countryStateId', $countryStateId))
+            ->addFilter(new EqualsFilter('active', true))
+            ->setLimit(1);
 
         return $this->administrativeDivisionRepository->searchIds($criteria, $context)->firstId();
     }
