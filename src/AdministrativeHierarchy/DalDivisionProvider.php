@@ -9,6 +9,8 @@ use Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionNode;
 use Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionProviderInterface;
 use Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionRecord;
 use Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionTreeBuilder;
+use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Api\Context\SystemSource;
 use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
@@ -21,9 +23,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
  * this service (it implements {@see DivisionProviderInterface}) to source the
  * tree from anywhere without touching consumers.
  *
- * Reads run in the default context; divisions are reference data, so the system
- * default language is the right fallback. A locale-specific read is a future
- * richer method on the adapter, not a change to the pure interface.
+ * Divisions are reference data, so they are read as the system, in the
+ * requested language with the system language as fallback.
  */
 final class DalDivisionProvider implements DivisionProviderInterface
 {
@@ -33,14 +34,22 @@ final class DalDivisionProvider implements DivisionProviderInterface
     ) {
     }
 
-    public function divisionsFor(string $countryIso2): array
+    public function divisionsFor(string $countryIso2, ?string $languageId = null): array
     {
-        return $this->treeBuilder->build($this->recordsFor($countryIso2));
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('countryState.country.iso', strtoupper($countryIso2)));
+        $criteria->addAssociation('countryState');
+
+        return $this->treeBuilder->build($this->records($criteria, $countryIso2, $languageId));
     }
 
-    public function divisionsForState(string $countryStateId): array
+    public function divisionsForState(string $countryStateId, ?string $languageId = null): array
     {
-        return $this->treeBuilder->build($this->recordsForState($countryStateId));
+        // All tiers carry the state's id, so no association is needed here.
+        $criteria = new Criteria();
+        $criteria->addFilter(new EqualsFilter('countryStateId', $countryStateId));
+
+        return $this->treeBuilder->build($this->records($criteria, '', $languageId));
     }
 
     public function maxDepth(string $countryIso2): int
@@ -49,22 +58,19 @@ final class DalDivisionProvider implements DivisionProviderInterface
     }
 
     /**
-     * Divisions owned by one state (all tiers carry the state's id), mapped to
-     * records. Country ISO / state code are irrelevant to the tree assembly, so
-     * no extra association is loaded here.
+     * Active divisions matching the criteria, mapped to records with their parent
+     * resolved from id to code.
      *
      * @return list<DivisionRecord>
      */
-    private function recordsForState(string $countryStateId): array
+    private function records(Criteria $criteria, string $countryIso2, ?string $languageId): array
     {
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('countryStateId', $countryStateId));
         $criteria->addFilter(new EqualsFilter('active', true));
         // Siblings keep input order in the tree builder, so this is the dropdown order.
         $criteria->addSorting(new FieldSorting('name'));
 
         $entities = $this->administrativeDivisionRepository
-            ->search($criteria, Context::createDefaultContext())
+            ->search($criteria, $this->readContext($languageId))
             ->getEntities();
 
         /** @var array<string, string> $codeById */
@@ -81,14 +87,13 @@ final class DalDivisionProvider implements DivisionProviderInterface
             \assert($entity instanceof AdministrativeDivisionEntity);
 
             $parentId = $entity->getParentId();
-            $parentCode = $parentId !== null ? ($codeById[$parentId] ?? null) : null;
 
             $records[] = new DivisionRecord(
-                '',
-                '',
+                $countryIso2,
+                $entity->getCountryState()?->getShortCode() ?? '',
                 $entity->getCode(),
                 $entity->getName() ?? $entity->getCode(),
-                $parentCode,
+                $parentId !== null ? ($codeById[$parentId] ?? null) : null,
                 $entity->getType(),
             );
         }
@@ -96,48 +101,12 @@ final class DalDivisionProvider implements DivisionProviderInterface
         return $records;
     }
 
-    /**
-     * @return list<DivisionRecord>
-     */
-    private function recordsFor(string $countryIso2): array
+    private function readContext(?string $languageId): Context
     {
-        $criteria = new Criteria();
-        $criteria->addFilter(new EqualsFilter('countryState.country.iso', strtoupper($countryIso2)));
-        $criteria->addFilter(new EqualsFilter('active', true));
-        // Siblings keep input order in the tree builder, so this is the dropdown order.
-        $criteria->addSorting(new FieldSorting('name'));
-        $criteria->addAssociation('countryState');
+        $languages = $languageId !== null && $languageId !== '' && $languageId !== Defaults::LANGUAGE_SYSTEM
+            ? [$languageId, Defaults::LANGUAGE_SYSTEM]
+            : [Defaults::LANGUAGE_SYSTEM];
 
-        $entities = $this->administrativeDivisionRepository
-            ->search($criteria, Context::createDefaultContext())
-            ->getEntities();
-
-        /** @var array<string, string> $codeById */
-        $codeById = [];
-
-        foreach ($entities as $entity) {
-            \assert($entity instanceof AdministrativeDivisionEntity);
-            $codeById[$entity->getId()] = $entity->getCode();
-        }
-
-        $records = [];
-
-        foreach ($entities as $entity) {
-            \assert($entity instanceof AdministrativeDivisionEntity);
-
-            $parentId = $entity->getParentId();
-            $parentCode = $parentId !== null ? ($codeById[$parentId] ?? null) : null;
-
-            $records[] = new DivisionRecord(
-                $countryIso2,
-                $entity->getCountryState()?->getShortCode() ?? '',
-                $entity->getCode(),
-                $entity->getName() ?? $entity->getCode(),
-                $parentCode,
-                $entity->getType(),
-            );
-        }
-
-        return $records;
+        return new Context(new SystemSource(), [], Defaults::CURRENCY, $languages);
     }
 }

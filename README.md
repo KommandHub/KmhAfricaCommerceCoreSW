@@ -5,7 +5,7 @@ Foundational localization, geography, and address infrastructure for Shopware 6 
 Infrastructure, not a storefront feature: it configures and extends what Shopware
 already does, it does not add payments, shipping, or checkout logic.
 
-[![Shopware](https://img.shields.io/badge/Shopware-~6.6.0%20%7C%7C%20~6.7.0-189eff)](https://www.shopware.com/)
+[![Shopware](https://img.shields.io/badge/Shopware-~6.6.1%20%7C%7C%20~6.7.0-189eff)](https://www.shopware.com/)
 [![PHP](https://img.shields.io/badge/PHP-8.2%2B-777bb4)](https://www.php.net/)
 [![License](https://img.shields.io/badge/license-Apache-2.0-blue)](LICENSE)
 
@@ -31,7 +31,7 @@ already does, it does not add payments, shipping, or checkout logic.
 
 | | |
 | --- | --- |
-| Shopware | `~6.6.0 || ~6.7.0` |
+| Shopware | `~6.6.1 || ~6.7.0` |
 | PHP | 8.2 or newer |
 | Database | MySQL 8.0+ / MariaDB 10.11+ |
 
@@ -173,7 +173,7 @@ Services other plugins can inject (all registered under their interface):
 | --- | --- |
 | `ConfigResolverInterface` | resolve a `RuleKey` `global → per-country → per-Sales-Channel` |
 | `AddressValidatorInterface` | advisory address warnings; the default warns when a country expects divisions (`divisionDepth > 0`) and none is picked. Re-alias it to add your own. Surfacing the warnings is up to the consumer. |
-| `DivisionProviderInterface` | the division tree for a country or state |
+| `DivisionProviderInterface` | the division tree for a country or state, with names in an optional language (system language as fallback) |
 | `PhoneNormalizerInterface` | E.164 normalization |
 | `CurrencyFormatterInterface` | ICU currency formatting |
 

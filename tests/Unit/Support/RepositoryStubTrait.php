@@ -23,7 +23,8 @@ use Shopware\Core\Framework\DataAbstractionLayer\Search\IdSearchResult;
  * and its plain (non-dotted) Equals/EqualsAny filters, honouring the limit.
  * Dotted association filters are ignored — pass only the rows that should match.
  * Every `upsert`/`create`/`delete` payload is appended to `$writes[<method>]`,
- * and every `search` criteria to `$writes['search']`.
+ * every `search` criteria to `$writes['search']` and its context to
+ * `$writes['searchContext']`.
  */
 trait RepositoryStubTrait
 {
@@ -33,13 +34,14 @@ trait RepositoryStubTrait
      */
     private function repository(array $entities = [], ?array &$writes = null): EntityRepository&MockObject
     {
-        $writes = ['upsert' => [], 'create' => [], 'delete' => [], 'search' => []];
+        $writes = ['upsert' => [], 'create' => [], 'delete' => [], 'search' => [], 'searchContext' => []];
 
         $repository = $this->createMock(EntityRepository::class);
 
         $repository->method('search')->willReturnCallback(
             function (Criteria $criteria, Context $context) use ($entities, &$writes): EntitySearchResult {
                 $writes['search'][] = $criteria;
+                $writes['searchContext'][] = $context;
                 $matches = $this->matching($entities, $criteria);
 
                 return new EntitySearchResult('stub', \count($matches), new EntityCollection($matches), null, $criteria, $context);

@@ -1,0 +1,46 @@
+# Read by shopware-cli (`make zip`, `make validate-plugin`).
+compatibility_date: '2026-02-11'
+
+validation:
+  ignore:
+    # shopware-cli validates against the latest core, which deprecates
+    # EntitySearchResult's *class hierarchy* for 6.8 (it stops extending
+    # EntityCollection) and so flags every call on it. getEntities() is defined on
+    # EntitySearchResult itself and stays in 6.8 — it is the forward-compatible way
+    # to read a search result. Only that call is ignored: first()/count()/... on
+    # the result are inherited from EntityCollection and must still be reported.
+    - identifier: phpstan/method.deprecatedClass
+      message: "Call to method getEntities() of deprecated class Shopware\\Core\\Framework\\DataAbstractionLayer\\Search\\EntitySearchResult"
+
+# `make zip` packs the working tree (--disable-git), so anything present
+# locally but ignored by git would ship unless it is listed here: dev
+# dependencies installed for PHPStan/php-cs-fixer, coverage reports, caches.
+# The dev-stack and tooling configs are left out because they only make sense
+# in a checkout of this repository, not in an installed plugin.
+build:
+  zip:
+    # The committed dist/ and public/ bundles are the release assets, built
+    # with Shopware's own build scripts. Letting the CLI rebuild them in a temp
+    # folder ships different files from the ones in git.
+    assets:
+      enabled: false
+    pack:
+      excludes:
+        paths:
+          - vendor
+          - build
+          - .phpunit.cache
+          - .php-cs-fixer.cache
+          - .php-cs-fixer.dist.php
+          - composer.lock
+          - node_modules
+          - tests
+          - Dockerfile
+          - docker-compose.yml
+          - .dockerignore
+          - .prettierignore
+          - .prettierrc.json
+          - CLAUDE.md
+          - phpcs.dist.xml
+          - phpstan.dist.neon
+          - phpunit.dist.xml

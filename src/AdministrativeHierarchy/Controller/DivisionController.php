@@ -41,7 +41,7 @@ class DivisionController extends AbstractController
             return new JsonResponse(['countryIso' => strtoupper($countryIso), 'maxDepth' => 0, 'divisions' => []]);
         }
 
-        $tree = $this->divisionProvider->divisionsFor($countryIso);
+        $tree = $this->divisionProvider->divisionsFor($countryIso, $context->getLanguageId());
 
         return new JsonResponse([
             'countryIso' => strtoupper($countryIso),

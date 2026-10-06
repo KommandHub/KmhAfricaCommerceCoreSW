@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Kommandhub\AfricaCommerceCore\Tests\Unit\Geo;
 
 use Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DataAbstractionLayer\AdministrativeDivisionEntity;
+use Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DataAbstractionLayer\Aggregate\AdministrativeDivisionTranslation\AdministrativeDivisionTranslationCollection;
+use Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DataAbstractionLayer\Aggregate\AdministrativeDivisionTranslation\AdministrativeDivisionTranslationEntity;
 use Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionRecord;
 use Kommandhub\AfricaCommerceCore\Domain\Feature\Feature;
 use Kommandhub\AfricaCommerceCore\Domain\Geo\CountryRecord;
@@ -44,6 +46,8 @@ use Shopware\Core\System\SystemConfig\SystemConfigService;
 #[UsesClass(Subdivision::class)]
 #[UsesClass(DivisionRecord::class)]
 #[UsesClass(AdministrativeDivisionEntity::class)]
+#[UsesClass(AdministrativeDivisionTranslationEntity::class)]
+#[UsesClass(AdministrativeDivisionTranslationCollection::class)]
 #[UsesClass(FeatureGate::class)]
 #[UsesClass(Config::class)]
 #[UsesClass(Feature::class)]
@@ -182,6 +186,13 @@ class ReferenceImporterTest extends TestCase
     {
         $ikeja = $this->division(self::IKEJA, 'NG-LA-IKEJA', 'Ikeja', null, 1, 'LGA');
         $surulere = $this->division('0190a0b0c0d0e0f00010203040500005', 'NG-LA-SURULERE', 'Old name', null, 1, 'LGA');
+
+        // Division translations carry no custom fields; the override check must
+        // skip them rather than fail (the import loads translations for it).
+        $translation = new AdministrativeDivisionTranslationEntity();
+        $translation->setUniqueIdentifier('t');
+        $translation->setName('Ikeja');
+        $ikeja->setTranslations(new AdministrativeDivisionTranslationCollection([$translation]));
 
         $divisions = $this->repository([$ikeja, $surulere], $divisionWrites);
 

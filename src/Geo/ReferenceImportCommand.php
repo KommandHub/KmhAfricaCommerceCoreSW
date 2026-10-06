@@ -44,7 +44,7 @@ class ReferenceImportCommand extends Command
             return Command::SUCCESS;
         }
 
-        $reports = $this->importer->import(Context::createDefaultContext());
+        $reports = $this->importer->import(Context::createCLIContext());
 
         $rows = [];
 

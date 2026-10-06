@@ -12,6 +12,9 @@ namespace Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy;
  * a country has no hierarchy below country_state.
  *
  * Default implementation: the DAL-backed DalDivisionProvider (adapter side).
+ *
+ * `$languageId` (optional) asks for names in that language, falling back to the
+ * system language; null reads the system language.
  */
 interface DivisionProviderInterface
 {
@@ -20,7 +23,7 @@ interface DivisionProviderInterface
      *
      * @return list<DivisionNode>
      */
-    public function divisionsFor(string $countryIso2): array;
+    public function divisionsFor(string $countryIso2, ?string $languageId = null): array;
 
     /**
      * Divisions under one country_state (the state the shopper picked), as a
@@ -28,7 +31,7 @@ interface DivisionProviderInterface
      *
      * @return list<DivisionNode>
      */
-    public function divisionsForState(string $countryStateId): array;
+    public function divisionsForState(string $countryStateId, ?string $languageId = null): array;
 
     /** Depth of the hierarchy for a country; 0 means none. */
     public function maxDepth(string $countryIso2): int;

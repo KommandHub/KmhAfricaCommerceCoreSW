@@ -71,8 +71,9 @@ class DivisionControllersTest extends TestCase
         ])];
 
         $provider = $this->createMock(DivisionProviderInterface::class);
-        $provider->method('divisionsFor')->willReturn($tree);
-        $provider->method('divisionsForState')->willReturn($tree);
+        // The shopper's language is passed through, so names come back localized.
+        $provider->method('divisionsFor')->with(static::anything(), 'lang-id')->willReturn($tree);
+        $provider->method('divisionsForState')->with(static::anything(), 'lang-id')->willReturn($tree);
 
         return $provider;
     }
@@ -89,6 +90,7 @@ class DivisionControllersTest extends TestCase
     {
         $context = $this->createMock(SalesChannelContext::class);
         $context->method('getSalesChannelId')->willReturn('sc-id');
+        $context->method('getLanguageId')->willReturn('lang-id');
 
         return $context;
     }
