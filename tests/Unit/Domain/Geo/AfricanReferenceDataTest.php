@@ -15,6 +15,7 @@ final class AfricanReferenceDataTest extends TestCase
     public function testXofAndXafAreZeroDecimals(): void
     {
         $decimals = [];
+
         foreach ((new AfricanReferenceData())->load()->currencies as $currency) {
             $decimals[$currency->isoCode] = $currency->decimals;
         }
@@ -39,6 +40,7 @@ final class AfricanReferenceDataTest extends TestCase
     public function testRepresentativeAddressPoliciesAreConfigured(): void
     {
         $byIso = [];
+
         foreach ((new AfricanReferenceData())->load()->countries as $country) {
             $byIso[$country->iso2] = $country;
         }
@@ -71,6 +73,7 @@ final class AfricanReferenceDataTest extends TestCase
         $data = (new AfricanReferenceData())->load();
 
         $countByIso = [];
+
         foreach ($data->subdivisions as $s) {
             $countByIso[$s->countryIso2] = ($countByIso[$s->countryIso2] ?? 0) + 1;
         }
@@ -98,6 +101,7 @@ final class AfricanReferenceDataTest extends TestCase
 
         // All ship codes are unique and attach to the Lagos state.
         $codes = [];
+
         foreach ($divisions as $d) {
             self::assertSame('NG-LA', $d->stateCode);
             $codes[] = $d->code;
@@ -107,6 +111,7 @@ final class AfricanReferenceDataTest extends TestCase
         $tree = (new DivisionTreeBuilder())->build($divisions);
 
         $ikeja = null;
+
         foreach ($tree as $node) {
             if ($node->code === 'NG-LA-IKEJA') {
                 $ikeja = $node;
@@ -120,6 +125,7 @@ final class AfricanReferenceDataTest extends TestCase
     public function testSubdivisionCodesAreIsoPrefixedAndUnique(): void
     {
         $codes = [];
+
         foreach ((new AfricanReferenceData())->load()->subdivisions as $s) {
             self::assertStringStartsWith($s->countryIso2 . '-', $s->code);
             $codes[] = $s->code;

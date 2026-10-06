@@ -7,33 +7,33 @@ namespace Kommandhub\AfricaCommerceCore\Tests\Integration\AdministrativeHierarch
 use Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DalDivisionProvider;
 use Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionNode;
 use Kommandhub\AfricaCommerceCore\Geo\ReferenceImporter;
+use Kommandhub\AfricaCommerceCore\Tests\Integration\PluginKernelTrait;
+use PHPUnit\Framework\Attributes\CoversNothing;
+use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Shopware\Core\Framework\Context;
-use Shopware\Core\Framework\Test\TestCaseBase\IntegrationTestBehaviour;
-use Shopware\Core\Framework\Test\TestCaseBase\KernelTestBehaviour;
 use Shopware\Core\System\SystemConfig\SystemConfigService;
 
 /**
  * In-stack proof of the administrative-division hierarchy. Requires a booted,
  * plugin-aware Shopware kernel and database — runs under `make test`, not in the
- * framework-agnostic Domain suite. Wrapped in a rolled-back transaction by
- * IntegrationTestBehaviour, so it leaves no state behind.
- *
- * @group kernel
+ * framework-agnostic Domain suite. Wrapped in a rolled-back transaction, so it
+ * leaves no state behind.
  */
+#[Group('kernel')]
+#[CoversNothing]
 class DivisionHierarchyTest extends TestCase
 {
-    use IntegrationTestBehaviour;
-    use KernelTestBehaviour;
+    use PluginKernelTrait;
 
     public function testHierarchySeedsIdempotentlyAndProviderReturnsTree(): void
     {
-        $config = $this->getContainer()->get(SystemConfigService::class);
+        $config = $this->service(SystemConfigService::class);
         static::assertInstanceOf(SystemConfigService::class, $config);
         // Divisions only seed when the feature is on.
         $config->set('KmhAfricaCommerceCoreSW.config.administrativeHierarchyEnabled', true);
 
-        $importer = $this->getContainer()->get(ReferenceImporter::class);
+        $importer = $this->service(ReferenceImporter::class);
         static::assertInstanceOf(ReferenceImporter::class, $importer);
 
         $context = Context::createDefaultContext();
@@ -49,7 +49,7 @@ class DivisionHierarchyTest extends TestCase
         static::assertTrue($second['divisions']->converged());
 
         // The provider rebuilds the tree from the DAL.
-        $provider = $this->getContainer()->get(DalDivisionProvider::class);
+        $provider = $this->service(DalDivisionProvider::class);
         static::assertInstanceOf(DalDivisionProvider::class, $provider);
 
         $tree = $provider->divisionsFor('NG');
@@ -73,6 +73,7 @@ class DivisionHierarchyTest extends TestCase
             }
 
             $found = $this->find($node->children, $code);
+
             if ($found !== null) {
                 return $found;
             }

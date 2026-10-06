@@ -121,7 +121,14 @@ subdivisions into `country_state`, and corrects ISO 4217 currency precision
 (notably XOF/XAF to 0 decimals). Upsert is keyed by ISO code, so it is
 **idempotent** — a second run creates and updates nothing.
 
-No-ops with a notice when the *Reference data* feature is turned off.
+Currencies are **never created**: a currency needs a real exchange factor, which
+only the merchant knows. A missing one is reported in the *Missing* column —
+create it under *Settings > Currencies*, then re-run the import to fix its
+precision.
+
+No-ops with a notice when the *Reference data* feature is turned off (the CLI and
+the admin button alike). The admin button requires the `system.plugin_maintain`
+privilege.
 
 ### Merchant override
 
@@ -132,7 +139,8 @@ it as merchant-owned and skips it, so hand-tuned data is never clobbered.
 
 Keys are global across the installation and live in
 `Util/AfricaCommerceCoreConstants` and nowhere else. The installer is idempotent;
-uninstall removes the set only when the merchant did not choose to keep data.
+uninstall removes the set — and drops the plugin's `kmh_af_*` tables — only when
+the merchant did not choose to keep data.
 
 ### Administrative-division hierarchy
 

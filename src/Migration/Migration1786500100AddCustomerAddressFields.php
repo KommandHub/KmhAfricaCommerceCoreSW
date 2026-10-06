@@ -12,8 +12,8 @@ use Shopware\Core\Framework\Migration\MigrationStep;
  *
  * Shopware forbids an EntityExtension from adding plain storage columns to a core
  * entity, so the data lives in its own `kmh_af_customer_address_data` table and
- * attaches through a OneToOne association. Additive only; `updateDestructive` is
- * empty so uninstall keeps the data. Runs after the division tables — the
+ * attaches through a OneToOne association. Additive only; the plugin's uninstall
+ * drops the table only when the merchant does not keep data. Runs after the division tables — the
  * aggregate's division FK references them.
  */
 class Migration1786500100AddCustomerAddressFields extends MigrationStep
@@ -54,7 +54,7 @@ class Migration1786500100AddCustomerAddressFields extends MigrationStep
 
     public function updateDestructive(Connection $connection): void
     {
-        // Intentionally empty — keep customer address data on uninstall.
+        // Intentionally empty — the plugin's uninstall drops the table when data is not kept.
     }
 
     /**

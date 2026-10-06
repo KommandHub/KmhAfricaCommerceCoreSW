@@ -47,17 +47,22 @@ class ReferenceImportCommand extends Command
         $reports = $this->importer->import(Context::createDefaultContext());
 
         $rows = [];
+
         foreach ($reports as $section => $report) {
             $rows[] = $this->row($section, $report);
         }
 
-        $io->table(['Dataset', 'Created', 'Updated', 'Up to date', 'Overridden'], $rows);
+        $io->table(['Dataset', 'Created', 'Updated', 'Up to date', 'Overridden', 'Missing'], $rows);
 
         $converged = array_reduce(
             $reports,
             static fn (bool $carry, ReconciliationReport $r): bool => $carry && $r->converged(),
             true,
         );
+
+        if ($reports['currencies']->missing() > 0) {
+            $io->note('Some African currencies are not installed. Create them in Settings > Currencies with a real exchange factor, then re-run to correct their precision.');
+        }
 
         $io->success($converged
             ? 'Reference data already converged — nothing to change.'
@@ -67,7 +72,7 @@ class ReferenceImportCommand extends Command
     }
 
     /**
-     * @return array{0: string, 1: int, 2: int, 3: int, 4: int}
+     * @return array{0: string, 1: int, 2: int, 3: int, 4: int, 5: int}
      */
     private function row(string $section, ReconciliationReport $report): array
     {
@@ -77,6 +82,7 @@ class ReferenceImportCommand extends Command
             $report->updated(),
             $report->upToDate(),
             $report->overridden(),
+            $report->missing(),
         ];
     }
 }

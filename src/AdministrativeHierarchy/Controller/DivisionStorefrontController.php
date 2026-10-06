@@ -43,15 +43,17 @@ class DivisionStorefrontController extends StorefrontController
     }
 
     /**
-     * @param list<DivisionNode>    $nodes
+     * @param list<DivisionNode> $nodes
      *
      * @return list<array{code: string, name: string, depth: int}>
      */
     private function flatten(array $nodes, int $depth = 0): array
     {
         $out = [];
+
         foreach ($nodes as $node) {
             $out[] = ['code' => $node->code, 'name' => str_repeat('— ', $depth) . $node->name, 'depth' => $depth];
+
             foreach ($this->flatten($node->children, $depth + 1) as $child) {
                 $out[] = $child;
             }

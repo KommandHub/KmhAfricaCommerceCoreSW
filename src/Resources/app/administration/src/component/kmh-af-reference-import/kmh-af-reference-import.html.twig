@@ -24,6 +24,7 @@
                     <th>{{ $tc('kmhAf.import.updated') }}</th>
                     <th>{{ $tc('kmhAf.import.upToDate') }}</th>
                     <th>{{ $tc('kmhAf.import.overridden') }}</th>
+                    <th>{{ $tc('kmhAf.import.missing') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -33,9 +34,14 @@
                     <td>{{ row.updated }}</td>
                     <td>{{ row.upToDate }}</td>
                     <td>{{ row.overridden }}</td>
+                    <td>{{ row.missing }}</td>
                 </tr>
             </tbody>
         </table>
+        <p v-if="sections && sections.currencies && sections.currencies.missing > 0"
+           class="kmh-af-reference-import__hint">
+            {{ $tc('kmhAf.import.missingHint') }}
+        </p>
     {% endblock %}
 </div>
 {% endblock %}

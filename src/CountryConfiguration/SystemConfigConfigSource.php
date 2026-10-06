@@ -39,8 +39,8 @@ final class SystemConfigConfigSource implements ConfigSourceInterface
     {
         return match ($scope->type) {
             ScopeType::Global => $this->systemConfig->get($this->globalKey($key)),
-            ScopeType::Country => $this->systemConfig->get($this->countryKey($key, (string) $scope->id)),
-            ScopeType::SalesChannel => $this->salesChannelOverride($key, (string) $scope->id),
+            ScopeType::Country => $this->systemConfig->get($this->countryKey($key, (string)$scope->id)),
+            ScopeType::SalesChannel => $this->salesChannelOverride($key, (string)$scope->id),
         };
     }
 

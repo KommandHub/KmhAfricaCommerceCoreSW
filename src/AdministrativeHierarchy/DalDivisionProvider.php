@@ -66,12 +66,14 @@ final class DalDivisionProvider implements DivisionProviderInterface
 
         /** @var array<string, string> $codeById */
         $codeById = [];
+
         foreach ($entities as $entity) {
             \assert($entity instanceof AdministrativeDivisionEntity);
             $codeById[$entity->getId()] = $entity->getCode();
         }
 
         $records = [];
+
         foreach ($entities as $entity) {
             \assert($entity instanceof AdministrativeDivisionEntity);
 
@@ -107,12 +109,14 @@ final class DalDivisionProvider implements DivisionProviderInterface
 
         /** @var array<string, string> $codeById */
         $codeById = [];
+
         foreach ($entities as $entity) {
             \assert($entity instanceof AdministrativeDivisionEntity);
             $codeById[$entity->getId()] = $entity->getCode();
         }
 
         $records = [];
+
         foreach ($entities as $entity) {
             \assert($entity instanceof AdministrativeDivisionEntity);
 
@@ -138,6 +142,7 @@ final class DalDivisionProvider implements DivisionProviderInterface
     private function depthOf(array $nodes): int
     {
         $depth = 0;
+
         foreach ($nodes as $node) {
             $depth = max($depth, 1 + $this->depthOf($node->children));
         }

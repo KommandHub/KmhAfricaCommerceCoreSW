@@ -59,6 +59,7 @@ services:
   # Reconciles the dataset against the DAL. Repositories are bound explicitly so
   # the wiring is identical on 6.6 and 6.7 regardless of repository autowiring.
   Kommandhub\AfricaCommerceCore\Geo\ReferenceImporter:
+    public: true
     arguments:
       $currencyRepository: '@currency.repository'
       $countryRepository: '@country.repository'
@@ -83,6 +84,7 @@ services:
   Kommandhub\AfricaCommerceCore\Domain\AdministrativeHierarchy\DivisionTreeBuilder: ~
 
   Kommandhub\AfricaCommerceCore\AdministrativeHierarchy\DalDivisionProvider:
+    public: true
     arguments:
       # Prefixed entity -> named repository autowiring cannot resolve it; bind it.
       $administrativeDivisionRepository: '@kmh_af_administrative_division.repository'

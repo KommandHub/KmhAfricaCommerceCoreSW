@@ -70,6 +70,6 @@ class Migration1786500000CreateAdministrativeDivisionTables extends MigrationSte
 
     public function updateDestructive(Connection $connection): void
     {
-        // Intentionally empty — keep merchant data on uninstall by default.
+        // Intentionally empty — the plugin's uninstall drops the tables when data is not kept.
     }
 }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Kommandhub\AfricaCommerceCore;
 
+use Doctrine\DBAL\Connection;
 use Kommandhub\AfricaCommerceCore\Installer\CustomFieldsInstaller;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\Plugin;
@@ -116,8 +117,10 @@ class KmhAfricaCommerceCoreSW extends Plugin
      *
      * Reference data seeded into core tables (countries, currencies, states) is
      * left in place — removing it could break existing orders and addresses.
-     * Only this plugin's own custom-field set is removed, and only when the
-     * merchant did not ask to keep user data.
+     * Only this plugin's own data — the custom-field set and the kmh_af_* tables —
+     * is removed, and only when the merchant did not ask to keep user data. Core
+     * drops this plugin's migration rows in that case, so a reinstall recreates
+     * the tables.
      */
     public function uninstall(UninstallContext $uninstallContext): void
     {
@@ -128,6 +131,17 @@ class KmhAfricaCommerceCoreSW extends Plugin
         }
 
         $this->getCustomFieldsInstaller()->uninstall($uninstallContext->getContext());
+
+        $connection = $this->requireContainer()->get(Connection::class);
+
+        if (!$connection instanceof Connection) {
+            throw new \RuntimeException('Invalid connection service.'); // @codeCoverageIgnore
+        }
+
+        // Children first: the address aggregate references the divisions.
+        $connection->executeStatement('DROP TABLE IF EXISTS `kmh_af_customer_address_data`');
+        $connection->executeStatement('DROP TABLE IF EXISTS `kmh_af_administrative_division_translation`');
+        $connection->executeStatement('DROP TABLE IF EXISTS `kmh_af_administrative_division`');
     }
 
     /**

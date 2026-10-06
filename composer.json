@@ -1,6 +1,6 @@
 {
     "name": "kommandhub/africa-commerce-core-sw",
-    "description": "Foundational localization, geography, and address infrastructure for Shopware 6 across African markets: ISO-standard reference data seeding, a Sales-Channel-aware country-configuration resolver, and additive, standards-anchored address capabilities. A framework-agnostic domain core with a thin Shopware adapter in one plugin; each capability can be toggled on or off.",
+    "description": "Localization, geography and address foundation for African markets: ISO reference data, administrative divisions, extra address fields and phone normalization for Shopware 6.",
     "type": "shopware-platform-plugin",
     "version": "0.1.0",
     "license": "Apache-2.0",
@@ -60,9 +60,9 @@
             "fr-FR": "African Commerce Core"
         },
         "description": {
-            "de-DE": "Foundational localization, geography, and address infrastructure for Shopware 6 across African markets: ISO-standard reference data seeding, a Sales-Channel-aware country-configuration resolver, and additive, standards-anchored address capabilities. A framework-agnostic domain core with a thin Shopware adapter in one plugin; each capability can be toggled on or off.",
-            "en-GB": "Foundational localization, geography, and address infrastructure for Shopware 6 across African markets: ISO-standard reference data seeding, a Sales-Channel-aware country-configuration resolver, and additive, standards-anchored address capabilities. A framework-agnostic domain core with a thin Shopware adapter in one plugin; each capability can be toggled on or off.",
-            "fr-FR": "Foundational localization, geography, and address infrastructure for Shopware 6 across African markets: ISO-standard reference data seeding, a Sales-Channel-aware country-configuration resolver, and additive, standards-anchored address capabilities. A framework-agnostic domain core with a thin Shopware adapter in one plugin; each capability can be toggled on or off."
+            "de-DE": "Lokalisierungs-, Geo- und Adressbasis für afrikanische Märkte: ISO-Referenzdaten, Verwaltungsbezirke, zusätzliche Adressfelder und Telefonnummern-Normalisierung für Shopware 6.",
+            "en-GB": "Localization, geography and address foundation for African markets: ISO reference data, administrative divisions, extra address fields and phone normalization for Shopware 6.",
+            "fr-FR": "Base de localisation, géographie et adresses pour les marchés africains : données ISO, divisions administratives, champs d'adresse et normalisation des numéros pour Shopware 6."
         },
         "manufacturerLink": {
             "de-DE": "https://kommandhub.com",

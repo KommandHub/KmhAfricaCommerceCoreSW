@@ -39,6 +39,7 @@ final class DivisionTreeBuilder
         }
 
         $roots = [];
+
         foreach ($childrenByParent[''] ?? [] as $record) {
             $roots[] = $this->node($record, $childrenByParent, []);
         }
@@ -48,13 +49,14 @@ final class DivisionTreeBuilder
 
     /**
      * @param array<string, list<DivisionRecord>> $childrenByParent
-     * @param array<string, true>                 $visited
+     * @param array<string, true> $visited
      */
     private function node(DivisionRecord $record, array $childrenByParent, array $visited): DivisionNode
     {
         $visited[$record->code] = true;
 
         $children = [];
+
         foreach ($childrenByParent[$record->code] ?? [] as $child) {
             if (isset($visited[$child->code])) {
                 // Cycle: a descendant points back at an ancestor. Stop here.

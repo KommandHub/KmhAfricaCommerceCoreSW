@@ -48,11 +48,12 @@ final class AfricanReferenceData implements ReferenceDataProviderInterface
     private function subdivisions(): array
     {
         $out = [];
+
         foreach ($this->readJson('subdivisions.json') as $row) {
             $out[] = new Subdivision(
-                (string) $row['country'],
-                (string) $row['code'],
-                (string) $row['name'],
+                $this->string($row, 'country'),
+                $this->string($row, 'code'),
+                $this->string($row, 'name'),
             );
         }
 
@@ -69,21 +70,33 @@ final class AfricanReferenceData implements ReferenceDataProviderInterface
     private function divisions(): array
     {
         $out = [];
-        foreach ($this->readJson('divisions.json') as $row) {
-            $parent = $row['parent'] ?? null;
-            $type = $row['type'] ?? null;
 
+        foreach ($this->readJson('divisions.json') as $row) {
             $out[] = new DivisionRecord(
-                (string) $row['country'],
-                (string) $row['state'],
-                (string) $row['code'],
-                (string) $row['name'],
-                $parent === null ? null : (string) $parent,
-                $type === null ? null : (string) $type,
+                $this->string($row, 'country'),
+                $this->string($row, 'state'),
+                $this->string($row, 'code'),
+                $this->string($row, 'name'),
+                isset($row['parent']) ? $this->string($row, 'parent') : null,
+                isset($row['type']) ? $this->string($row, 'type') : null,
             );
         }
 
         return $out;
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private function string(array $row, string $key): string
+    {
+        $value = $row[$key] ?? null;
+
+        if (!\is_string($value)) {
+            throw new \RuntimeException(sprintf('Reference data row field "%s" must be a string.', $key));
+        }
+
+        return $value;
     }
 
     /**
@@ -112,32 +125,20 @@ final class AfricanReferenceData implements ReferenceDataProviderInterface
     /** @return list<CurrencyRecord> */
     private function currencies(): array
     {
-        // [iso => [decimals, name, symbol]] — decimals per ISO 4217.
-        // Zero-decimal (XOF/XAF/...) and three-decimal (TND) are in scope.
+        // [iso => decimals] per ISO 4217. Zero-decimal (XOF/XAF/...) and
+        // three-decimal (TND) are in scope.
         $rows = [
-            'XOF' => [0, 'West African CFA franc', 'CFA'],
-            'XAF' => [0, 'Central African CFA franc', 'FCFA'],
-            'RWF' => [0, 'Rwandan franc', 'FRw'],
-            'UGX' => [0, 'Ugandan shilling', 'USh'],
-            'GNF' => [0, 'Guinean franc', 'FG'],
-            'BIF' => [0, 'Burundian franc', 'FBu'],
-            'DJF' => [0, 'Djiboutian franc', 'Fdj'],
-            'KMF' => [0, 'Comorian franc', 'CF'],
-            'TND' => [3, 'Tunisian dinar', 'DT'],
-            'NGN' => [2, 'Nigerian naira', '₦'],
-            'GHS' => [2, 'Ghanaian cedi', '₵'],
-            'KES' => [2, 'Kenyan shilling', 'KSh'],
-            'ZAR' => [2, 'South African rand', 'R'],
-            'EGP' => [2, 'Egyptian pound', 'E£'],
-            'MAD' => [2, 'Moroccan dirham', 'DH'],
-            'DZD' => [2, 'Algerian dinar', 'DA'],
-            'TZS' => [2, 'Tanzanian shilling', 'TSh'],
-            'ETB' => [2, 'Ethiopian birr', 'Br'],
+            'XOF' => 0, 'XAF' => 0, 'RWF' => 0, 'UGX' => 0, 'GNF' => 0,
+            'BIF' => 0, 'DJF' => 0, 'KMF' => 0,
+            'TND' => 3,
+            'NGN' => 2, 'GHS' => 2, 'KES' => 2, 'ZAR' => 2, 'EGP' => 2,
+            'MAD' => 2, 'DZD' => 2, 'TZS' => 2, 'ETB' => 2,
         ];
 
         $out = [];
-        foreach ($rows as $iso => [$decimals, $name, $symbol]) {
-            $out[] = new CurrencyRecord((string) $iso, $decimals, $name, $symbol);
+
+        foreach ($rows as $iso => $decimals) {
+            $out[] = new CurrencyRecord($iso, $decimals);
         }
 
         return $out;

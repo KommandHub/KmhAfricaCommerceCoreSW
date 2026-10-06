@@ -118,12 +118,12 @@ class AdministrativeDivisionEntity extends Entity
         $this->countryState = $countryState;
     }
 
-    public function getParent(): ?AdministrativeDivisionEntity
+    public function getParent(): ?self
     {
         return $this->parent;
     }
 
-    public function setParent(?AdministrativeDivisionEntity $parent): void
+    public function setParent(?self $parent): void
     {
         $this->parent = $parent;
     }
