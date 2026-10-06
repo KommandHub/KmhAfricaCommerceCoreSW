@@ -28,6 +28,7 @@ final class PrecedenceConfigResolver implements ConfigResolverInterface
 
         foreach ($this->scopeChain($countryIso, $salesChannelId) as $scope) {
             $layerValue = $this->source->get($key, $scope);
+
             if ($layerValue !== null) {
                 $value = $layerValue;
             }
@@ -44,7 +45,7 @@ final class PrecedenceConfigResolver implements ConfigResolverInterface
     ): bool {
         $value = $this->resolve($key, $countryIso, $salesChannelId);
 
-        return $value === null ? $default : (bool) $value;
+        return $value === null ? $default : (bool)$value;
     }
 
     public function int(
@@ -55,7 +56,7 @@ final class PrecedenceConfigResolver implements ConfigResolverInterface
     ): int {
         $value = $this->resolve($key, $countryIso, $salesChannelId);
 
-        return $value === null ? $default : (int) $value;
+        return \is_int($value) || \is_bool($value) || is_numeric($value) ? (int)$value : $default;
     }
 
     /**

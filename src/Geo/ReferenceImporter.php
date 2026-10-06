@@ -38,7 +38,7 @@ use Shopware\Core\System\Currency\CurrencyEntity;
  *
  * Updates are deliberately minimal — for a currency only the rounding precision
  * is written, never the live exchange factor or name, so an import cannot clobber
- * merchant pricing data. Full field sets are written only when creating.
+ * merchant pricing data. Missing currencies are reported, never created.
  */
 final class ReferenceImporter
 {
@@ -97,11 +97,16 @@ final class ReferenceImporter
                 && $existing->getTotalRounding()->getDecimals() === $currency->decimals;
 
             $action = $this->reconciler->decide($existing !== null, $this->isOverridden($existing), $matches);
+
+            // Never create a currency: its exchange factor is merchant data and a
+            // placeholder would misprice the catalogue. Report it as missing.
+            if ($action === ReconcileAction::Create) {
+                $action = ReconcileAction::SkipMissing;
+            }
+
             $report->record($action);
 
-            if ($action === ReconcileAction::Create) {
-                $payload[] = $this->currencyCreatePayload($currency);
-            } elseif ($action === ReconcileAction::Update && $existing !== null) {
+            if ($action === ReconcileAction::Update && $existing !== null) {
                 // Precision only — never overwrite the merchant's live factor/name.
                 $payload[] = [
                     'id' => $existing->getId(),
@@ -233,6 +238,7 @@ final class ReferenceImporter
 
         /** @var array<string, DivisionRecord> $byCode */
         $byCode = [];
+
         foreach ($divisions as $division) {
             $byCode[$division->code] = $division;
         }
@@ -244,6 +250,7 @@ final class ReferenceImporter
         // one, so a child's parentId can point at a parent created in the same
         // batch.
         $idByCode = [];
+
         foreach ($divisions as $division) {
             $idByCode[$division->code] = ($existingByCode[$division->code] ?? null)?->getId() ?? Uuid::randomHex();
         }
@@ -257,8 +264,10 @@ final class ReferenceImporter
         );
 
         $payload = [];
+
         foreach ($ordered as $division) {
             $stateId = $stateIdByCode[$division->stateCode] ?? null;
+
             if ($stateId === null) {
                 // Owning state not installed; cannot attach the division.
                 continue;
@@ -314,6 +323,7 @@ final class ReferenceImporter
         $criteria = (new Criteria())->addFilter(new EqualsAnyFilter('shortCode', $codes));
 
         $map = [];
+
         foreach ($this->countryStateRepository->search($criteria, $context)->getEntities() as $state) {
             \assert($state instanceof CountryStateEntity);
             $map[strtoupper($state->getShortCode())] = $state->getId();
@@ -334,6 +344,7 @@ final class ReferenceImporter
         $criteria = (new Criteria())->addFilter(new EqualsAnyFilter('code', $codes));
 
         $map = [];
+
         foreach ($this->administrativeDivisionRepository->search($criteria, $context)->getEntities() as $division) {
             \assert($division instanceof AdministrativeDivisionEntity);
             $map[$division->getCode()] = $division;
@@ -364,23 +375,6 @@ final class ReferenceImporter
     }
 
     /**
-     * @return array<string, mixed>
-     */
-    private function currencyCreatePayload(CurrencyRecord $currency): array
-    {
-        return [
-            'id' => Uuid::randomHex(),
-            'isoCode' => $currency->isoCode,
-            'name' => $currency->name,
-            'shortName' => $currency->isoCode,
-            'symbol' => $currency->symbol,
-            'factor' => $currency->factor,
-            'itemRounding' => $this->rounding($currency->decimals),
-            'totalRounding' => $this->rounding($currency->decimals),
-        ];
-    }
-
-    /**
      * @return array{decimals: int, interval: float, roundForNet: bool}
      */
     private function rounding(int $decimals): array
@@ -396,7 +390,7 @@ final class ReferenceImporter
     {
         $country = $this->findOneBy($this->countryRepository, 'iso', $iso2, $context);
 
-        return $country?->getId();
+        return $country instanceof CountryEntity ? $country->getId() : null;
     }
 
     private function findOneBy(EntityRepository $repository, string $field, string $value, Context $context): ?Entity

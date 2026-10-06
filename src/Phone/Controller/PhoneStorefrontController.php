@@ -46,8 +46,8 @@ class PhoneStorefrontController extends StorefrontController
             return new JsonResponse(['enabled' => false]);
         }
 
-        $number = (string) $request->request->get('number', '');
-        $countryId = (string) $request->request->get('countryId', '');
+        $number = (string)$request->request->get('number', '');
+        $countryId = (string)$request->request->get('countryId', '');
 
         $iso = $countryId !== '' ? $this->resolveIso($countryId, $context->getContext()) : null;
 

@@ -46,8 +46,10 @@ Component.register('kmh-af-reference-import', {
                     this.sections = response.sections;
                     this.createNotificationSuccess({ message: this.$tc('kmhAf.import.success') });
                 })
-                .catch(() => {
-                    this.createNotificationError({ message: this.$tc('kmhAf.import.error') });
+                .catch((error) => {
+                    const code = error?.response?.data?.errors?.[0]?.code;
+                    const key = code === 'KMH_AF__REFERENCE_DATA_DISABLED' ? 'kmhAf.import.disabled' : 'kmhAf.import.error';
+                    this.createNotificationError({ message: this.$tc(key) });
                 })
                 .finally(() => {
                     this.isLoading = false;

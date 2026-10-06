@@ -55,6 +55,7 @@ final class ReconcilerTest extends TestCase
     {
         // First run: everything absent -> all created.
         $first = new ReconciliationReport();
+
         foreach (range(1, 5) as $ignored) {
             $first->record($this->reconciler->decide(false, false, false));
         }
@@ -63,6 +64,7 @@ final class ReconcilerTest extends TestCase
 
         // Second run: everything now matches -> nothing changes.
         $second = new ReconciliationReport();
+
         foreach (range(1, 5) as $ignored) {
             $second->record($this->reconciler->decide(true, false, true));
         }

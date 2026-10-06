@@ -66,7 +66,7 @@ export default class KmhAddressFormPlugin extends PluginBaseClass {
         const stateId = this._stateSelect ? this._stateSelect.value : '';
         if (!stateId) {
             this._lastLoadedState = null;
-            this._resetDivision();
+            this._hideDivision(false);
             return;
         }
 
@@ -79,7 +79,7 @@ export default class KmhAddressFormPlugin extends PluginBaseClass {
         fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then((response) => response.json())
             .then((data) => this._fillDivisions(data.divisions || []))
-            .catch(() => this._resetDivision());
+            .catch(() => this._hideDivision(true));
     }
 
     _fillDivisions(divisions) {
@@ -97,14 +97,13 @@ export default class KmhAddressFormPlugin extends PluginBaseClass {
             select.appendChild(option);
         });
 
-        const group = select.closest('.form-group');
         if (divisions.length === 0) {
-            select.disabled = true;
-            if (group) group.classList.add('d-none');
+            this._hideDivision(false);
             return;
         }
 
         select.disabled = false;
+        const group = select.closest('.form-group');
         if (group) group.classList.remove('d-none');
 
         // Prefer the shopper's in-session choice; fall back to the saved value on
@@ -116,12 +115,19 @@ export default class KmhAddressFormPlugin extends PluginBaseClass {
         }
     }
 
-    _resetDivision() {
+    /**
+     * Hide the division field. A disabled select is not submitted, so the server
+     * keeps the stored division (used when the lookup failed). An enabled, empty
+     * one submits "" and clears it — right when the state has no divisions, so a
+     * division from a previously chosen state cannot linger.
+     */
+    _hideDivision(disable) {
         const select = this._divisionSelect;
         while (select.options.length > 1) {
             select.remove(1);
         }
-        select.disabled = true;
+        select.value = '';
+        select.disabled = disable;
         const group = select.closest('.form-group');
         if (group) group.classList.add('d-none');
     }

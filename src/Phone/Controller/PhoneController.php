@@ -43,8 +43,8 @@ class PhoneController extends AbstractController
             return new JsonResponse(['enabled' => false], Response::HTTP_NOT_FOUND);
         }
 
-        $number = (string) $request->request->get('number', '');
-        $countryIso = (string) $request->request->get('countryIso', '');
+        $number = (string)$request->request->get('number', '');
+        $countryIso = (string)$request->request->get('countryIso', '');
 
         if ($number === '' || $countryIso === '') {
             return new JsonResponse(

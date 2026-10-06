@@ -17,10 +17,10 @@ namespace Kommandhub\AfricaCommerceCore\Domain\CurrencyFormatting;
 interface CurrencyFormatterInterface
 {
     /**
-     * @param int    $minorAmount    amount in minor units (e.g. kobo, cents)
-     * @param int    $fractionDigits the currency's decimal places (NGN 2, XOF 0, TND 3)
-     * @param string $currencyIso    ISO 4217 code
-     * @param string $locale         BCP 47 / ICU locale, e.g. "en-NG"
+     * @param int $minorAmount amount in minor units (e.g. kobo, cents)
+     * @param int $fractionDigits the currency's decimal places (NGN 2, XOF 0, TND 3)
+     * @param string $currencyIso ISO 4217 code
+     * @param string $locale BCP 47 / ICU locale, e.g. "en-NG"
      */
     public function format(int $minorAmount, int $fractionDigits, string $currencyIso, string $locale): string;
 }

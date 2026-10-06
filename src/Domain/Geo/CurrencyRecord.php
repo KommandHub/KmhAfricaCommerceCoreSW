@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace Kommandhub\AfricaCommerceCore\Domain\Geo;
 
 /**
- * A currency to seed/correct, keyed by ISO 4217 code.
+ * A currency whose precision to correct, keyed by ISO 4217 code.
  *
  * {@see $decimals} is the standard's minor-unit precision (XOF/XAF = 0) and is
- * the field the importer corrects on an existing currency. {@see $name},
- * {@see $symbol} and {@see $factor} are used only when *creating* a missing
- * currency — an existing currency's live exchange {@see $factor} is a merchant
- * concern and is never overwritten by the importer.
- *
- * ponytail: seed {@see $factor} is a placeholder (1.0). Real exchange rates are
- * merchant data; the importer only guarantees correct precision, not rates.
+ * the only field the importer writes. Missing currencies are never created: a
+ * currency needs a real exchange factor, which is merchant data, so creating one
+ * with a placeholder would silently misprice every product shown in it.
  */
 final class CurrencyRecord
 {
@@ -23,9 +19,6 @@ final class CurrencyRecord
     public function __construct(
         string $isoCode,
         public readonly int $decimals,
-        public readonly string $name,
-        public readonly string $symbol,
-        public readonly float $factor = 1.0,
     ) {
         $this->isoCode = strtoupper($isoCode);
     }

@@ -53,12 +53,14 @@ class KmhRegisterRoute extends AbstractRegisterRoute
         $shippingAddressId = $customer->getDefaultShippingAddressId();
 
         $billing = $data->get('billingAddress');
+
         if ($billing instanceof RequestDataBag) {
             $this->addressDataWriter->write($billingAddressId, $billing, $context->getContext());
         }
 
         // Only when a distinct shipping address was submitted.
         $shipping = $data->get('shippingAddress');
+
         if ($shipping instanceof RequestDataBag && $shippingAddressId !== $billingAddressId) {
             $this->addressDataWriter->write($shippingAddressId, $shipping, $context->getContext());
         }

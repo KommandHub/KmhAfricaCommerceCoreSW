@@ -15,6 +15,7 @@ final class ReconciliationReport
     private int $updated = 0;
     private int $upToDate = 0;
     private int $overridden = 0;
+    private int $missing = 0;
 
     public function record(ReconcileAction $action): void
     {
@@ -23,6 +24,7 @@ final class ReconciliationReport
             ReconcileAction::Update => $this->updated++,
             ReconcileAction::SkipUpToDate => $this->upToDate++,
             ReconcileAction::SkipOverridden => $this->overridden++,
+            ReconcileAction::SkipMissing => $this->missing++,
         };
     }
 
@@ -47,6 +49,11 @@ final class ReconciliationReport
     }
 
     /** True when the run changed nothing — the idempotency signal. */
+    public function missing(): int
+    {
+        return $this->missing;
+    }
+
     public function converged(): bool
     {
         return $this->created === 0 && $this->updated === 0;
@@ -60,6 +67,7 @@ final class ReconciliationReport
             'updated' => $this->updated,
             'upToDate' => $this->upToDate,
             'overridden' => $this->overridden,
+            'missing' => $this->missing,
         ];
     }
 }

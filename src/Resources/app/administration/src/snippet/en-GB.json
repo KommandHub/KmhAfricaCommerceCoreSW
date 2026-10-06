@@ -9,7 +9,10 @@
       "created": "Created",
       "updated": "Updated",
       "upToDate": "Up to date",
-      "overridden": "Overridden"
+      "overridden": "Overridden",
+      "missing": "Missing",
+      "missingHint": "Some African currencies are not installed. Create them under Settings > Currencies with a real exchange factor, then run the import again to correct their precision.",
+      "disabled": "Reference data is disabled in the Features card. Enable it to run the import."
     }
   }
 }

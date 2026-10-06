@@ -17,7 +17,8 @@ use Shopware\Core\Framework\Validation\DataBag\RequestDataBag;
  *
  * Shared by every route that saves an address (account upsert, registration), so
  * the mapping lives in one place. Idempotent per address (unique customer_address_id):
- * an existing row is updated, a blank submission with no existing row is skipped.
+ * an existing row is updated, a blank submission with no existing row is skipped,
+ * and a key missing from the databag leaves its stored value untouched.
  * The submitted division *code* is resolved to the division FK.
  */
 final class AddressDataWriter
@@ -28,17 +29,36 @@ final class AddressDataWriter
     ) {
     }
 
+    /** Databag key => aggregate field. */
+    private const FIELDS = [
+        'kmhAfLandmark' => 'landmark',
+        'kmhAfArea' => 'area',
+        'kmhAfDirections' => 'directions',
+        'kmhAfDigitalAddressCode' => 'digitalAddressCode',
+        'kmhAfDivisionCode' => 'divisionId',
+    ];
+
     public function write(string $addressId, RequestDataBag $addressBag, Context $context): void
     {
-        $divisionCode = $this->clean($addressBag->get('kmhAfDivisionCode'));
+        // Only keys actually submitted are written. An absent key means "not
+        // part of this form/client" (a headless PATCH, a disabled division
+        // select) and must keep the stored value; an empty one clears it.
+        $fields = [];
 
-        $fields = [
-            'landmark' => $this->clean($addressBag->get('kmhAfLandmark')),
-            'area' => $this->clean($addressBag->get('kmhAfArea')),
-            'directions' => $this->clean($addressBag->get('kmhAfDirections')),
-            'digitalAddressCode' => $this->clean($addressBag->get('kmhAfDigitalAddressCode')),
-            'divisionId' => $divisionCode !== null ? $this->resolveDivisionId($divisionCode, $context) : null,
-        ];
+        foreach (self::FIELDS as $key => $field) {
+            if (!$addressBag->has($key)) {
+                continue;
+            }
+
+            $value = $this->clean($addressBag->get($key));
+            $fields[$field] = $field === 'divisionId' && $value !== null
+                ? $this->resolveDivisionId($value, $context)
+                : $value;
+        }
+
+        if ($fields === []) {
+            return;
+        }
 
         $existingId = $this->existingId($addressId, $context);
 

@@ -9,7 +9,10 @@
       "created": "Erstellt",
       "updated": "Aktualisiert",
       "upToDate": "Aktuell",
-      "overridden": "Überschrieben"
+      "overridden": "Überschrieben",
+      "missing": "Fehlend",
+      "missingHint": "Einige afrikanische Währungen sind nicht angelegt. Lege sie unter Einstellungen > Währungen mit einem echten Umrechnungsfaktor an und führe den Import erneut aus, um ihre Genauigkeit zu korrigieren.",
+      "disabled": "Referenzdaten sind in der Karte „Funktionen“ deaktiviert. Aktiviere sie, um den Import auszuführen."
     }
   }
 }

@@ -42,6 +42,7 @@ class AddressPageSubscriber implements EventSubscriberInterface
         }
 
         $address = $event->getPage()->getAddress();
+
         if ($address === null || $address->getExtension('kmhAfData') !== null) {
             return;
         }

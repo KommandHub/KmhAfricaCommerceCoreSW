@@ -34,7 +34,7 @@
             <name>addressExtensionsEnabled</name>
             <label>Additive address fields (landmark, area, directions, digital code)</label>
             <defaultValue>false</defaultValue>
-            <helpText>Additive nullable address fields on customer addresses (available via DAL/Admin/API once installed). Storefront form rendering will honour this toggle.</helpText>
+            <helpText>Adds landmark, area, directions, digital address code and (with the hierarchy on) a division picker to the storefront address forms, stored with each customer address.</helpText>
         </input-field>
 
         <input-field type="bool">
