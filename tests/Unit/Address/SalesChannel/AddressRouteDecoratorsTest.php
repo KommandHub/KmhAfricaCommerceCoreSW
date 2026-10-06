@@ -54,6 +54,15 @@ class AddressRouteDecoratorsTest extends TestCase
         );
     }
 
+    public function testDecoratorsExposeTheCoreRoute(): void
+    {
+        $upsertInner = $this->createMock(AbstractUpsertAddressRoute::class);
+        $registerInner = $this->createMock(AbstractRegisterRoute::class);
+
+        static::assertSame($upsertInner, (new KmhUpsertAddressRoute($upsertInner, $this->writer(), $this->gate(true)))->getDecorated());
+        static::assertSame($registerInner, (new KmhRegisterRoute($registerInner, $this->writer(), $this->gate(true)))->getDecorated());
+    }
+
     public function testUpsertWritesForTheSavedAddress(): void
     {
         $this->expectWrites([self::BILLING_ID]);

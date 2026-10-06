@@ -12,6 +12,17 @@ use PHPUnit\Framework\TestCase;
 
 final class AfricanReferenceDataTest extends TestCase
 {
+    /** @var list<string> */
+    private array $tempDirs = [];
+
+    protected function tearDown(): void
+    {
+        foreach ($this->tempDirs as $dir) {
+            array_map('unlink', glob($dir . '/*') ?: []);
+            rmdir($dir);
+        }
+    }
+
     public function testXofAndXafAreZeroDecimals(): void
     {
         $decimals = [];
@@ -132,5 +143,44 @@ final class AfricanReferenceDataTest extends TestCase
         }
 
         self::assertSame(array_values(array_unique($codes)), $codes, 'duplicate subdivision code');
+    }
+
+    public function testMissingDataFileFailsLoudly(): void
+    {
+        $this->expectExceptionMessage('Cannot read reference data file');
+
+        (new AfricanReferenceData($this->dataDir([])))->load();
+    }
+
+    public function testNonArrayDataFileFailsLoudly(): void
+    {
+        $this->expectExceptionMessage('is not a JSON array');
+
+        (new AfricanReferenceData($this->dataDir(['subdivisions.json' => '"nope"'])))->load();
+    }
+
+    public function testNonStringFieldFailsLoudly(): void
+    {
+        $this->expectExceptionMessage('field "code" must be a string');
+
+        (new AfricanReferenceData($this->dataDir([
+            'subdivisions.json' => '[{"country": "NG", "code": 12, "name": "Lagos"}]',
+        ])))->load();
+    }
+
+    /**
+     * @param array<string, string> $files
+     */
+    private function dataDir(array $files): string
+    {
+        $dir = sys_get_temp_dir() . '/kmh-af-data-' . bin2hex(random_bytes(4));
+        mkdir($dir);
+        $this->tempDirs[] = $dir;
+
+        foreach ($files as $name => $json) {
+            file_put_contents($dir . '/' . $name, $json);
+        }
+
+        return $dir;
     }
 }

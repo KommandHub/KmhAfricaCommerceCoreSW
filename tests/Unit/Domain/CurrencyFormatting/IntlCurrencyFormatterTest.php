@@ -56,4 +56,13 @@ final class IntlCurrencyFormatterTest extends TestCase
         self::assertStringContainsString('150,000', $out);
         self::assertStringNotContainsString('.', $out);
     }
+
+    public function testUnformattableInputThrowsWithContext(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('Failed to format 100');
+
+        // Invalid UTF-8 as the currency code makes ICU refuse to format.
+        $this->formatter->format(100, 2, "\xff\xfe", 'en_US');
+    }
 }

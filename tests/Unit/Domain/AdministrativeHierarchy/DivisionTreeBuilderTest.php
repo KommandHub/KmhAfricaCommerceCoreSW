@@ -88,6 +88,20 @@ final class DivisionTreeBuilderTest extends TestCase
         self::assertCount(0, $tree);
     }
 
+    public function testDuplicateCodeUnderItsOwnDescendantIsNotReEntered(): void
+    {
+        // Malformed data: a second "R" row claims to sit under R's own child A.
+        // Walking R -> A must not descend into R again.
+        $tree = $this->builder->build([
+            $this->record('R', 'Root'),
+            $this->record('A', 'A', 'R'),
+            $this->record('R', 'Root again', 'A'),
+        ]);
+
+        self::assertCount(1, $tree);
+        self::assertSame([], $tree[0]->children[0]->children);
+    }
+
     private function record(string $code, string $name, ?string $parentCode = null): DivisionRecord
     {
         return new DivisionRecord('NG', 'NG-LA', $code, $name, $parentCode);

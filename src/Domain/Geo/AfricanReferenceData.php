@@ -23,6 +23,13 @@ final class AfricanReferenceData implements ReferenceDataProviderInterface
 {
     public const VERSION = '2026.1';
 
+    /**
+     * @param string $dataDir where the versioned JSON files live (overridable for tests)
+     */
+    public function __construct(private readonly string $dataDir = __DIR__ . '/data')
+    {
+    }
+
     public function load(): ReferenceDataSet
     {
         return new ReferenceDataSet(
@@ -104,7 +111,7 @@ final class AfricanReferenceData implements ReferenceDataProviderInterface
      */
     private function readJson(string $file): array
     {
-        $path = __DIR__ . '/data/' . $file;
+        $path = $this->dataDir . '/' . $file;
         $json = @file_get_contents($path);
 
         if ($json === false) {
