@@ -10,6 +10,9 @@
       "directions": "Wegbeschreibung",
       "division": "Verwaltungsbezirk",
       "divisionPlaceholder": "Bezirk wählen (optional)"
+    },
+    "phone": {
+      "invalid": "Diese Telefonnummer scheint für das gewählte Land nicht gültig zu sein. Bitte prüfe sie."
     }
   }
 }

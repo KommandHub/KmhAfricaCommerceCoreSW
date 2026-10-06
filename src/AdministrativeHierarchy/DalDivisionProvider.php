@@ -13,6 +13,7 @@ use Shopware\Core\Framework\Context;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
+use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 
 /**
  * Reads the administrative-division DAL entity and hands the flat rows to the
@@ -44,7 +45,7 @@ final class DalDivisionProvider implements DivisionProviderInterface
 
     public function maxDepth(string $countryIso2): int
     {
-        return $this->depthOf($this->divisionsFor($countryIso2));
+        return DivisionNode::depthOf($this->divisionsFor($countryIso2));
     }
 
     /**
@@ -59,6 +60,8 @@ final class DalDivisionProvider implements DivisionProviderInterface
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('countryStateId', $countryStateId));
         $criteria->addFilter(new EqualsFilter('active', true));
+        // Siblings keep input order in the tree builder, so this is the dropdown order.
+        $criteria->addSorting(new FieldSorting('name'));
 
         $entities = $this->administrativeDivisionRepository
             ->search($criteria, Context::createDefaultContext())
@@ -101,6 +104,8 @@ final class DalDivisionProvider implements DivisionProviderInterface
         $criteria = new Criteria();
         $criteria->addFilter(new EqualsFilter('countryState.country.iso', strtoupper($countryIso2)));
         $criteria->addFilter(new EqualsFilter('active', true));
+        // Siblings keep input order in the tree builder, so this is the dropdown order.
+        $criteria->addSorting(new FieldSorting('name'));
         $criteria->addAssociation('countryState');
 
         $entities = $this->administrativeDivisionRepository
@@ -134,19 +139,5 @@ final class DalDivisionProvider implements DivisionProviderInterface
         }
 
         return $records;
-    }
-
-    /**
-     * @param list<DivisionNode> $nodes
-     */
-    private function depthOf(array $nodes): int
-    {
-        $depth = 0;
-
-        foreach ($nodes as $node) {
-            $depth = max($depth, 1 + $this->depthOf($node->children));
-        }
-
-        return $depth;
     }
 }

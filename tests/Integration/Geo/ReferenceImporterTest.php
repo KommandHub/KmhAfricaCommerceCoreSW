@@ -95,6 +95,50 @@ class ReferenceImporterTest extends TestCase
         }
     }
 
+    /**
+     * Currency custom fields are translated: a marker set while editing in a
+     * non-default language must still protect the record.
+     */
+    public function testOverrideSetInAnotherLanguageIsRespected(): void
+    {
+        $context = Context::createDefaultContext();
+
+        $languages = $this->service('language.repository');
+        static::assertInstanceOf(EntityRepository::class, $languages);
+        $german = $languages->searchIds(
+            (new Criteria())->addFilter(new EqualsFilter('locale.code', 'de-DE'))->setLimit(1),
+            $context,
+        )->firstId();
+
+        if ($german === null) {
+            static::markTestSkipped('No de-DE language in the test database.');
+        }
+
+        $existing = $this->currency('XOF', $context);
+        $id = $existing?->getId() ?? Uuid::randomHex();
+        $this->currencyRepository()->upsert([[
+            'id' => $id,
+            'isoCode' => 'XOF',
+            'name' => 'XOF',
+            'shortName' => 'XOF',
+            'symbol' => 'XOF',
+            'factor' => 655.957,
+            'itemRounding' => ['decimals' => 2, 'interval' => 0.01, 'roundForNet' => true],
+            'totalRounding' => ['decimals' => 2, 'interval' => 0.01, 'roundForNet' => true],
+            'translations' => [
+                $german => ['name' => 'XOF', 'shortName' => 'XOF', 'customFields' => ['kmh_af_merchant_override' => true]],
+            ],
+        ]], $context);
+
+        $importer = $this->service(ReferenceImporter::class);
+        static::assertInstanceOf(ReferenceImporter::class, $importer);
+
+        $report = $importer->import($context)['currencies'];
+
+        static::assertGreaterThan(0, $report->overridden());
+        static::assertSame(2, $this->currency('XOF', $context)?->getItemRounding()->getDecimals(), 'overridden XOF was corrected');
+    }
+
     private function currency(string $iso, Context $context): ?CurrencyEntity
     {
         $criteria = (new Criteria())->addFilter(new EqualsFilter('isoCode', $iso))->setLimit(1);

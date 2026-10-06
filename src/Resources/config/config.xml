@@ -46,6 +46,20 @@
     </card>
 
     <card>
+        <title>Country rules</title>
+        <title lang="de-DE">Länderregeln</title>
+
+        <input-field type="int">
+            <name>divisionDepth</name>
+            <label>Administrative-division depth (global default)</label>
+            <label lang="de-DE">Tiefe der Verwaltungsbezirke (globaler Standard)</label>
+            <min>0</min>
+            <helpText>Tiers of local divisions expected below the state (0 = none). When above 0, the default address validator suggests picking a division. Override per country with bin/console system:config:set KmhAfricaCommerceCoreSW.country.NG.divisionDepth 2.</helpText>
+            <helpText lang="de-DE">Erwartete Ebenen lokaler Bezirke unterhalb des Bundeslands (0 = keine). Pro Land überschreibbar mit bin/console system:config:set KmhAfricaCommerceCoreSW.country.NG.divisionDepth 2.</helpText>
+        </input-field>
+    </card>
+
+    <card>
         <title>Logging</title>
         <title lang="de-DE">Protokollierung</title>
 
