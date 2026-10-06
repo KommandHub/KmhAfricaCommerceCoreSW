@@ -52,7 +52,7 @@ class AddressPageSubscriber implements EventSubscriberInterface
             ->addAssociation('division')
             ->setLimit(1);
 
-        $data = $this->addressDataRepository->search($criteria, $event->getContext())->first();
+        $data = $this->addressDataRepository->search($criteria, $event->getContext())->getEntities()->first();
 
         if ($data !== null) {
             $address->addExtension('kmhAfData', $data);

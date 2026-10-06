@@ -70,7 +70,7 @@ class PhoneStorefrontController extends StorefrontController
 
     private function resolveIso(string $countryId, Context $context): ?string
     {
-        $country = $this->countryRepository->search(new Criteria([$countryId]), $context)->first();
+        $country = $this->countryRepository->search(new Criteria([$countryId]), $context)->getEntities()->first();
 
         return $country instanceof CountryEntity ? $country->getIso() : null;
     }

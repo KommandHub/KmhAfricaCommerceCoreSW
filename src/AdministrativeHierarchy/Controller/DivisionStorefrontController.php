@@ -39,7 +39,7 @@ class DivisionStorefrontController extends StorefrontController
             return new JsonResponse(['divisions' => []]);
         }
 
-        return new JsonResponse(['divisions' => $this->flatten($this->divisionProvider->divisionsForState($countryStateId))]);
+        return new JsonResponse(['divisions' => $this->flatten($this->divisionProvider->divisionsForState($countryStateId, $context->getLanguageId()))]);
     }
 
     /**

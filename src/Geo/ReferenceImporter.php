@@ -21,7 +21,6 @@ use Shopware\Core\Framework\DataAbstractionLayer\Entity;
 use Shopware\Core\Framework\DataAbstractionLayer\EntityRepository;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsAnyFilter;
-use Shopware\Core\Framework\DataAbstractionLayer\Search\Filter\EqualsFilter;
 use Shopware\Core\Framework\Uuid\Uuid;
 use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
 use Shopware\Core\System\Country\CountryEntity;
@@ -88,8 +87,15 @@ final class ReferenceImporter
         $report = new ReconciliationReport();
         $payload = [];
 
+        $existingByIso = $this->indexBy(
+            $this->currencyRepository,
+            'isoCode',
+            array_map(static fn (CurrencyRecord $c): string => $c->isoCode, $currencies),
+            $context,
+        );
+
         foreach ($currencies as $currency) {
-            $existing = $this->findOneBy($this->currencyRepository, 'isoCode', $currency->isoCode, $context);
+            $existing = $existingByIso[$currency->isoCode] ?? null;
             \assert($existing === null || $existing instanceof CurrencyEntity);
 
             $matches = $existing !== null
@@ -131,8 +137,15 @@ final class ReferenceImporter
         $report = new ReconciliationReport();
         $payload = [];
 
+        $existingByIso = $this->indexBy(
+            $this->countryRepository,
+            'iso',
+            array_map(static fn (CountryRecord $c): string => $c->iso2, $countries),
+            $context,
+        );
+
         foreach ($countries as $country) {
-            $existing = $this->findOneBy($this->countryRepository, 'iso', $country->iso2, $context);
+            $existing = $existingByIso[$country->iso2] ?? null;
             \assert($existing === null || $existing instanceof CountryEntity);
 
             $matches = $existing !== null && $this->countryMatches($existing, $country);
@@ -186,19 +199,29 @@ final class ReferenceImporter
         $report = new ReconciliationReport();
         $payload = [];
 
-        /** @var array<string, string|null> $countryIdByIso */
-        $countryIdByIso = [];
+        $countryByIso = $this->indexBy(
+            $this->countryRepository,
+            'iso',
+            array_map(static fn (Subdivision $s): string => $s->countryIso2, $subdivisions),
+            $context,
+        );
+        $existingByCode = $this->indexBy(
+            $this->countryStateRepository,
+            'shortCode',
+            array_map(static fn (Subdivision $s): string => $s->code, $subdivisions),
+            $context,
+        );
 
         foreach ($subdivisions as $subdivision) {
-            $countryId = $countryIdByIso[$subdivision->countryIso2]
-                ??= $this->resolveCountryId($subdivision->countryIso2, $context);
+            $country = $countryByIso[$subdivision->countryIso2] ?? null;
 
-            if ($countryId === null) {
+            if ($country === null) {
                 // Cannot attach a state to a country that is not installed; skip.
                 continue;
             }
 
-            $existing = $this->findOneBy($this->countryStateRepository, 'shortCode', $subdivision->code, $context);
+            $countryId = $country->getUniqueIdentifier();
+            $existing = $existingByCode[$subdivision->code] ?? null;
             \assert($existing === null || $existing instanceof CountryStateEntity);
 
             $matches = $existing !== null && $existing->getName() === $subdivision->name;
@@ -315,21 +338,14 @@ final class ReferenceImporter
      */
     private function resolveStateIds(array $divisions, Context $context): array
     {
-        $codes = array_values(array_unique(array_map(
-            static fn (DivisionRecord $d): string => $d->stateCode,
-            $divisions,
-        )));
+        $states = $this->indexBy(
+            $this->countryStateRepository,
+            'shortCode',
+            array_map(static fn (DivisionRecord $d): string => $d->stateCode, $divisions),
+            $context,
+        );
 
-        $criteria = (new Criteria())->addFilter(new EqualsAnyFilter('shortCode', $codes));
-
-        $map = [];
-
-        foreach ($this->countryStateRepository->search($criteria, $context)->getEntities() as $state) {
-            \assert($state instanceof CountryStateEntity);
-            $map[strtoupper($state->getShortCode())] = $state->getId();
-        }
-
-        return $map;
+        return array_map(static fn (Entity $state): string => $state->getUniqueIdentifier(), $states);
     }
 
     /**
@@ -339,18 +355,18 @@ final class ReferenceImporter
      */
     private function existingDivisionsByCode(array $divisions, Context $context): array
     {
-        $codes = array_map(static fn (DivisionRecord $d): string => $d->code, $divisions);
+        $existing = $this->indexBy(
+            $this->administrativeDivisionRepository,
+            'code',
+            array_map(static fn (DivisionRecord $d): string => $d->code, $divisions),
+            $context,
+        );
 
-        $criteria = (new Criteria())->addFilter(new EqualsAnyFilter('code', $codes));
-
-        $map = [];
-
-        foreach ($this->administrativeDivisionRepository->search($criteria, $context)->getEntities() as $division) {
+        return array_map(static function (Entity $division): AdministrativeDivisionEntity {
             \assert($division instanceof AdministrativeDivisionEntity);
-            $map[$division->getCode()] = $division;
-        }
 
-        return $map;
+            return $division;
+        }, $existing);
     }
 
     /**
@@ -386,24 +402,41 @@ final class ReferenceImporter
         ];
     }
 
-    private function resolveCountryId(string $iso2, Context $context): ?string
+    /**
+     * One query for a whole dataset, keyed by its natural key (upper-cased) —
+     * never one query per record.
+     *
+     * Translations are loaded for the override check: on country, currency and
+     * country_state the custom fields are translated, so the marker may have been
+     * set while editing in any language.
+     *
+     * @param list<string> $values
+     *
+     * @return array<string, Entity>
+     */
+    private function indexBy(EntityRepository $repository, string $field, array $values, Context $context): array
     {
-        $country = $this->findOneBy($this->countryRepository, 'iso', $iso2, $context);
+        if ($values === []) {
+            return [];
+        }
 
-        return $country instanceof CountryEntity ? $country->getId() : null;
-    }
-
-    private function findOneBy(EntityRepository $repository, string $field, string $value, Context $context): ?Entity
-    {
-        // Translations are loaded for the override check: on country, currency and
-        // country_state the custom fields are translated, so the marker may have
-        // been set while editing in any language.
         $criteria = (new Criteria())
-            ->addFilter(new EqualsFilter($field, $value))
-            ->addAssociation('translations')
-            ->setLimit(1);
+            ->addFilter(new EqualsAnyFilter($field, array_values(array_unique($values))))
+            ->addAssociation('translations');
 
-        return $repository->search($criteria, $context)->first();
+        $entities = $repository->search($criteria, $context)->getEntities();
+
+        $map = [];
+
+        foreach ($entities as $entity) {
+            $key = $entity->get($field);
+
+            if (\is_string($key)) {
+                $map[strtoupper($key)] = $entity;
+            }
+        }
+
+        return $map;
     }
 
     private function isOverridden(?Entity $entity): bool
@@ -423,7 +456,10 @@ final class ReferenceImporter
         }
 
         foreach ($translations as $translation) {
-            if ($translation instanceof Entity && $this->hasOverrideMarker($translation->get('customFields'))) {
+            // Not every translation carries custom fields (a division's does not).
+            if ($translation instanceof Entity
+                && $translation->has('customFields')
+                && $this->hasOverrideMarker($translation->get('customFields'))) {
                 return true;
             }
         }

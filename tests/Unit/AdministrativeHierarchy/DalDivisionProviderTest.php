@@ -13,6 +13,8 @@ use Kommandhub\AfricaCommerceCore\Tests\Unit\Support\RepositoryStubTrait;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
+use Shopware\Core\Defaults;
+use Shopware\Core\Framework\Api\Context\SystemSource;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Criteria;
 use Shopware\Core\Framework\DataAbstractionLayer\Search\Sorting\FieldSorting;
 use Shopware\Core\System\Country\Aggregate\CountryState\CountryStateEntity;
@@ -44,6 +46,22 @@ class DalDivisionProviderTest extends TestCase
         $criteria = $writes['search'][0];
         static::assertInstanceOf(Criteria::class, $criteria);
         $this->assertQuery($criteria, 'countryState.country.iso', 'NG');
+
+        // No language asked: a system read in the system language.
+        static::assertInstanceOf(SystemSource::class, $writes['searchContext'][0]->getSource());
+        static::assertSame([Defaults::LANGUAGE_SYSTEM], $writes['searchContext'][0]->getLanguageIdChain());
+    }
+
+    public function testReadsNamesInTheRequestedLanguageWithSystemFallback(): void
+    {
+        $provider = $this->provider($writes);
+        $french = '0190a0b0c0d0e0f000102030405000ff';
+
+        $provider->divisionsFor('NG', $french);
+        $provider->divisionsForState(self::STATE, Defaults::LANGUAGE_SYSTEM);
+
+        static::assertSame([$french, Defaults::LANGUAGE_SYSTEM], $writes['searchContext'][0]->getLanguageIdChain());
+        static::assertSame([Defaults::LANGUAGE_SYSTEM], $writes['searchContext'][1]->getLanguageIdChain());
     }
 
     public function testBuildsTheStateTree(): void
